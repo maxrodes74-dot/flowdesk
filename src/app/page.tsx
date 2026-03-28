@@ -299,19 +299,19 @@ export default function LandingPage() {
             {/* Urgency badge */}
             <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-blue-100 text-blue-700 rounded-full text-sm font-semibold mb-8 animate-fade-in">
               <Zap className="w-4 h-4" />
-              Used by 2,000+ freelancers — free to start
+              The proposal tool freelancers actually use
             </div>
 
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold text-gray-900 mb-6 leading-[1.1] tracking-tight">
-              Win more clients.
+              Your next client
               <br />
               <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                Get paid faster.
+                said yes 90 seconds ago.
               </span>
             </h1>
 
             <p className="text-xl md:text-2xl text-gray-600 mb-4 max-w-2xl mx-auto leading-relaxed">
-              AI writes your proposal in 90 seconds. Clients approve and pay through their own branded portal. You stop chasing invoices forever.
+              Paste a project brief. AI writes the proposal. Your client reviews it in their own branded portal and pays on the spot. That&apos;s it. That&apos;s the whole tool.
             </p>
 
             {/* Micro social proof */}
@@ -325,8 +325,7 @@ export default function LandingPage() {
                 ))}
               </span>
               <span className="ml-2">
-                &ldquo;Saved me 5+ hours a week&rdquo; — rated{' '}
-                <strong className="text-gray-700">4.9/5</strong>
+                &ldquo;I sent my first proposal before finishing my coffee.&rdquo;
               </span>
             </p>
 
@@ -336,14 +335,14 @@ export default function LandingPage() {
                 href="/signup"
                 className="group px-8 py-4 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 shadow-lg hover:shadow-xl transition-all inline-flex items-center justify-center gap-2 text-lg"
               >
-                Start Free — No Credit Card
+                Send Your First Proposal Free
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Link>
               <button
-                onClick={() => scrollToSection('features')}
+                onClick={() => scrollToSection('demo')}
                 className="px-8 py-4 border-2 border-gray-300 text-gray-700 font-semibold rounded-xl hover:border-blue-600 hover:text-blue-600 transition-all text-lg"
               >
-                See How It Works
+                Try the Live Demo
               </button>
             </div>
           </div>
@@ -351,13 +350,13 @@ export default function LandingPage() {
           {/* Hero trust strip */}
           <div className="mt-16 flex flex-wrap justify-center gap-x-10 gap-y-4 text-sm text-gray-500">
             <span className="flex items-center gap-1.5">
-              <Shield className="w-4 h-4 text-green-500" /> 256-bit encryption
+              <Shield className="w-4 h-4 text-green-500" /> Bank-grade encryption
             </span>
             <span className="flex items-center gap-1.5">
-              <CreditCard className="w-4 h-4 text-green-500" /> Powered by Stripe
+              <CreditCard className="w-4 h-4 text-green-500" /> Stripe-powered payments
             </span>
             <span className="flex items-center gap-1.5">
-              <Clock className="w-4 h-4 text-green-500" /> Setup in under 5 min
+              <Clock className="w-4 h-4 text-green-500" /> Free forever plan
             </span>
           </div>
         </div>
@@ -371,19 +370,19 @@ export default function LandingPage() {
               <p className="text-3xl font-bold text-blue-600">
                 <AnimatedNumber target={2000} suffix="+" />
               </p>
-              <p className="text-gray-500 text-sm mt-1">Freelancers onboard</p>
+              <p className="text-gray-500 text-sm mt-1">Freelancers use ScopePad</p>
             </div>
             <div className="text-center">
               <p className="text-3xl font-bold text-blue-600">
                 <AnimatedNumber target={15000} suffix="+" />
               </p>
-              <p className="text-gray-500 text-sm mt-1">Proposals sent</p>
+              <p className="text-gray-500 text-sm mt-1">Proposals generated</p>
             </div>
             <div className="text-center">
               <p className="text-3xl font-bold text-blue-600">
                 $<AnimatedNumber target={4200000} />
               </p>
-              <p className="text-gray-500 text-sm mt-1">Payments processed</p>
+              <p className="text-gray-500 text-sm mt-1">Collected for freelancers</p>
             </div>
             <div className="text-center">
               <div className="flex justify-center gap-0.5 mb-1">
@@ -402,13 +401,13 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className={`text-center mb-16 transition-all duration-700 ${features.inView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
             <p className="text-blue-600 font-semibold mb-3 uppercase tracking-wide text-sm">
-              Everything you need
+              Three tools. One workflow.
             </p>
             <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-              Proposals, portals & payments — unified
+              Brief to bank account.
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Three powerful tools that work together so you never drop the ball with a client again.
+              Every feature exists to shorten the path between &ldquo;client says yes&rdquo; and &ldquo;money hits your account.&rdquo;
             </p>
           </div>
 
@@ -417,22 +416,22 @@ export default function LandingPage() {
               {
                 icon: <Sparkles className="w-7 h-7 text-blue-600" />,
                 title: 'AI Proposals',
-                desc: 'Paste a 3-sentence brief and get a polished, professional proposal in seconds. Customize the tone, add your rates, and hit send.',
-                stat: '90 sec average',
+                desc: 'Three sentences in, polished proposal out. It matches your tone, includes your rates, and looks like you spent an hour on it. You didn\'t.',
+                stat: '90 sec, not 90 min',
                 color: 'blue',
               },
               {
                 icon: <Layout className="w-7 h-7 text-indigo-600" />,
                 title: 'Branded Client Portal',
-                desc: 'Every client gets their own URL with proposals, milestones, invoices, and files — all in one place they can access 24/7.',
-                stat: 'One link per client',
+                desc: 'Each client gets a single URL — your brand, your colors. Proposals, milestones, invoices, messages. No more "check your email for the attachment."',
+                stat: 'One URL, everything',
                 color: 'indigo',
               },
               {
                 icon: <CreditCard className="w-7 h-7 text-emerald-600" />,
                 title: 'Smart Invoicing',
-                desc: 'Generate invoices from approved proposals. Accept card payments via Stripe. Auto-reminders chase late payments so you don\'t have to.',
-                stat: 'Get paid 2× faster',
+                desc: 'Proposal approved? Invoice auto-generated. Payment late? Reminders escalate from friendly nudge to firm follow-up — you never write that awkward email again.',
+                stat: 'Get paid 2x faster',
                 color: 'emerald',
               },
             ].map((f, i) => (
@@ -466,13 +465,13 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className={`text-center mb-16 transition-all duration-700 ${howItWorks.inView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
             <p className="text-blue-600 font-semibold mb-3 uppercase tracking-wide text-sm">
-              Simple 3-step workflow
+              How it works
             </p>
             <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-              From brief to paid in minutes
+              Client says &ldquo;send me a proposal.&rdquo; You&apos;re done in 90 seconds.
             </h2>
             <p className="text-xl text-gray-600">
-              Send your first proposal before your coffee gets cold.
+              No templates to customize. No documents to attach. No invoices to create manually.
             </p>
           </div>
 
@@ -484,20 +483,20 @@ export default function LandingPage() {
               {[
                 {
                   num: '1',
-                  title: 'Describe your project',
-                  desc: 'Paste a client brief, project scope, or just a few sentences. That\'s all the AI needs.',
+                  title: 'Paste your brief',
+                  desc: 'Copy in a client email, Slack message, or just jot down a couple sentences. The AI takes it from there.',
                   icon: <FileText className="w-5 h-5" />,
                 },
                 {
                   num: '2',
-                  title: 'AI writes your proposal',
-                  desc: 'Review, adjust the tone, add your rates, and hit send — all in under 90 seconds.',
+                  title: 'Review and send',
+                  desc: 'A polished proposal appears in your voice — deliverables, timeline, pricing, terms. Tweak anything, then hit send.',
                   icon: <Sparkles className="w-5 h-5" />,
                 },
                 {
                   num: '3',
-                  title: 'Client approves & pays',
-                  desc: 'Your client reviews in their portal, approves the proposal, and pays. Invoice auto-generated.',
+                  title: 'Get paid',
+                  desc: 'Your client opens their portal, approves the scope, and pays the invoice — all without a single email from you.',
                   icon: <TrendingUp className="w-5 h-5" />,
                 },
               ].map((step, i) => (
@@ -540,10 +539,10 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className={`text-center mb-16 transition-all duration-700 ${testimonials.inView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
             <p className="text-blue-600 font-semibold mb-3 uppercase tracking-wide text-sm">
-              Loved by freelancers
+              From real freelancers
             </p>
             <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-              Don&apos;t take our word for it
+              They stopped stitching tools together.
             </h2>
           </div>
 
@@ -551,21 +550,21 @@ export default function LandingPage() {
             {[
               {
                 quote:
-                  'I used to spend Sunday evenings writing proposals. Now I paste my notes and ScopePad has a polished draft in less than two minutes. Game changer.',
+                  'Sunday nights used to mean writing proposals. Now I paste my notes and have a polished draft before my tea steeps. I\'m not going back.',
                 name: 'Mia Chen',
                 role: 'Brand Strategist',
                 stars: 5,
               },
               {
                 quote:
-                  'My clients love their portal — they can see every invoice, every deliverable, without digging through email. I look 10× more professional.',
+                  'A client told me I was "the most organized freelancer they\'d ever worked with." All I did was send them a portal link. ScopePad does the rest.',
                 name: 'Jordan Ellis',
                 role: 'Web Developer',
                 stars: 5,
               },
               {
                 quote:
-                  'Before ScopePad I had $8K in overdue invoices. Now I rarely wait past 3 days for payment. The auto-reminders are worth the price alone.',
+                  'I had $8K in overdue invoices when I signed up. Two months in, I rarely wait past 3 days. The auto-reminders handle the awkward conversations I never wanted to have.',
                 name: 'Priya Sharma',
                 role: 'UX Designer',
                 stars: 5,
@@ -602,13 +601,13 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className={`text-center mb-16 transition-all duration-700 ${pricing.inView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
             <p className="text-blue-600 font-semibold mb-3 uppercase tracking-wide text-sm">
-              Transparent pricing
+              Pricing
             </p>
             <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-              Start free. Upgrade when you&apos;re ready.
+              Less than one billable hour. Saves you five a week.
             </h2>
             <p className="text-xl text-gray-600">
-              No hidden fees. No surprises. Cancel anytime.
+              Free to start. No credit card. Upgrade only when ScopePad is already paying for itself.
             </p>
 
             {/* Billing Toggle */}
@@ -634,7 +633,7 @@ export default function LandingPage() {
               </span>
               {billingPeriod === 'annual' && (
                 <span className="inline-block ml-2 px-3 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded-full">
-                  Save 20%
+                  Save 30%+
                 </span>
               )}
             </div>
@@ -644,7 +643,7 @@ export default function LandingPage() {
             {/* Free */}
             <div className="p-8 bg-white border border-gray-200 rounded-2xl hover:shadow-lg transition-shadow">
               <h3 className="text-2xl font-bold text-gray-900 mb-1">Free</h3>
-              <p className="text-gray-500 text-sm mb-4">Everything to get started</p>
+              <p className="text-gray-500 text-sm mb-4">No strings. No expiry.</p>
               <p className="mb-6">
                 <span className="text-5xl font-extrabold text-gray-900">$0</span>
               </p>
@@ -677,12 +676,15 @@ export default function LandingPage() {
                 </span>
               </div>
               <h3 className="text-2xl font-bold text-gray-900 mb-1">Pro</h3>
-              <p className="text-gray-500 text-sm mb-4">For growing freelancers</p>
+              <p className="text-gray-500 text-sm mb-4">For freelancers who are done with admin</p>
               <p className="mb-6">
                 <span className="text-5xl font-extrabold text-gray-900">
-                  {billingPeriod === 'monthly' ? '$12' : '$115'}
+                  {billingPeriod === 'monthly' ? '$12' : '$97'}
                 </span>
                 <span className="text-gray-500">{billingPeriod === 'monthly' ? '/mo' : '/year'}</span>
+                {billingPeriod === 'annual' && (
+                  <span className="block text-sm text-green-600 font-semibold mt-1">$8.08/mo — save $47/year</span>
+                )}
               </p>
               <Link
                 href={billingPeriod === 'monthly' ? '/signup?plan=pro' : '/signup?plan=pro&billing=annual'}
@@ -710,12 +712,15 @@ export default function LandingPage() {
             {/* Pro+ */}
             <div className="p-8 bg-white border border-gray-200 rounded-2xl hover:shadow-lg transition-shadow">
               <h3 className="text-2xl font-bold text-gray-900 mb-1">Pro+</h3>
-              <p className="text-gray-500 text-sm mb-4">For serious freelance businesses</p>
+              <p className="text-gray-500 text-sm mb-4">For one-person agencies that run on autopilot</p>
               <p className="mb-6">
                 <span className="text-5xl font-extrabold text-gray-900">
-                  {billingPeriod === 'monthly' ? '$19' : '$182'}
+                  {billingPeriod === 'monthly' ? '$19' : '$148'}
                 </span>
                 <span className="text-gray-500">{billingPeriod === 'monthly' ? '/mo' : '/year'}</span>
+                {billingPeriod === 'annual' && (
+                  <span className="block text-sm text-green-600 font-semibold mt-1">$12.33/mo — save $80/year</span>
+                )}
               </p>
               <Link
                 href={billingPeriod === 'monthly' ? '/signup?plan=pro-plus' : '/signup?plan=pro-plus&billing=annual'}
@@ -754,12 +759,12 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <p className="text-blue-600 font-semibold mb-3 uppercase tracking-wide text-sm">
-              Why ScopePad
+              The honest comparison
             </p>
             <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-              ScopePad vs. the competition
+              You&apos;ve probably tried these. Here&apos;s how we&apos;re different.
             </h2>
-            <p className="text-xl text-gray-600">See why freelancers are switching.</p>
+            <p className="text-xl text-gray-600">No spin — just the features that matter.</p>
           </div>
 
           <div className="overflow-x-auto">
@@ -813,7 +818,7 @@ export default function LandingPage() {
           <div className="mt-8 p-5 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-3">
             <TrendingUp className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
             <p className="text-gray-700 text-sm">
-              <strong>Note:</strong> HoneyBook raised their pricing by 89 % in 2024. We&apos;re committed to keeping ScopePad affordable for freelancers.
+              <strong>Heads up:</strong> HoneyBook raised their prices by 89% in 2024. ScopePad won&apos;t do that — our costs scale with AI, not arbitrary price hikes.
             </p>
           </div>
         </div>
@@ -823,14 +828,14 @@ export default function LandingPage() {
       <section className="py-24 bg-white" ref={demo.ref}>
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <p className="text-blue-600 font-semibold mb-3 uppercase tracking-wide text-sm">
-              Try it now
+            <p className="text-blue-600 font-semibold mb-3 uppercase tracking-wide text-sm" id="demo">
+              See it yourself
             </p>
             <h2 className="text-4xl font-bold text-gray-900">
-              Generate a proposal in 90 seconds
+              Paste any project brief. Watch what happens.
             </h2>
             <p className="text-xl text-gray-600 mt-4">
-              No signup required. See how ScopePad turns brief notes into professional proposals.
+              No signup. No fake data. This is the actual AI that powers every ScopePad proposal.
             </p>
           </div>
 
@@ -930,7 +935,7 @@ export default function LandingPage() {
 
           <div className="mt-8 text-center">
             <p className="text-gray-600 mb-4">
-              Ready to save hours on proposals? Start with our free plan.
+              That took 90 seconds. Imagine doing that for every client.
             </p>
             <Link
               href="/signup"
@@ -957,29 +962,29 @@ export default function LandingPage() {
 
           <div className="bg-white rounded-2xl border border-gray-200 px-8">
             <FAQItem
-              question="Is there really a free plan?"
-              answer="Yes — completely free, forever. You get 3 active clients and 5 AI proposals per month. No credit card required to sign up."
+              question="Is the free plan actually free?"
+              answer="Yes. 3 active clients, 5 AI proposals per month, basic invoicing. No credit card. No 14-day trial. It's free until you decide it's worth upgrading — and even then, Pro is $12/mo."
               defaultOpen
             />
             <FAQItem
-              question="How does the AI proposal generation work?"
-              answer="Paste your project brief or client notes (even a few sentences work). Our AI analyzes the scope and generates a professional proposal with deliverables, timeline, and pricing sections. You review, customize anything, and send — typically under 90 seconds."
+              question="How good are the AI proposals, really?"
+              answer="Good enough that clients don't know AI wrote them. You paste a brief — even a messy one — and get back a structured proposal with deliverables, timeline, pricing, and terms that match your tone. Most freelancers tweak a line or two and hit send."
             />
             <FAQItem
-              question="Can I use my own branding?"
-              answer="On the Pro plan and above, you can add your logo, brand colors, and custom domain to the client portal. Your clients will see your brand, not ours."
+              question="Will my clients see ScopePad branding?"
+              answer="On Free, yes — a small 'Powered by ScopePad' footer. On Pro and above, it's your logo, your colors, your domain. Clients just see a professional portal with your name on it."
             />
             <FAQItem
-              question="What payment methods do you support?"
-              answer="We integrate with Stripe, so your clients can pay with credit/debit cards. All payment processing is PCI-compliant and secured with 256-bit encryption."
+              question="How do payments work?"
+              answer="Your clients pay via Stripe (cards and bank transfers). Money goes directly into your Stripe account — ScopePad never touches your funds. We only charge the subscription."
             />
             <FAQItem
               question="Can I cancel anytime?"
-              answer="Absolutely. No contracts, no cancellation fees. You can downgrade to the free plan at any time and keep all your data."
+              answer="Yes. No contracts, no fees. Downgrade to Free and keep all your data. We'd rather earn your money every month than lock you in."
             />
             <FAQItem
-              question="How is ScopePad different from HoneyBook or Bonsai?"
-              answer="ScopePad is built specifically for speed: AI proposals in 90 seconds, 5-minute setup, and a streamlined client portal. We also offer a genuinely free tier — most competitors start at $15–20/month."
+              question="Why not just use HoneyBook or Bonsai?"
+              answer="They cost more, take hours to set up, and bolt AI on as an afterthought. ScopePad was built AI-first: 90-second proposals, zero-config onboarding, and a price that doesn't require you to justify it to yourself every month."
             />
           </div>
         </div>
@@ -993,12 +998,12 @@ export default function LandingPage() {
 
         <div className="relative max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-4xl md:text-5xl font-extrabold text-white mb-6 leading-tight">
-            Stop chasing invoices.
+            You do the work.
             <br />
-            Start closing clients.
+            ScopePad handles the business.
           </h2>
           <p className="text-xl text-blue-100 mb-10 max-w-xl mx-auto">
-            Join 2,000+ freelancers saving 5+ hours a week with ScopePad. Set up in minutes, free forever.
+            Proposals, portals, invoices, payments — running on autopilot while you focus on what you&apos;re actually good at.
           </p>
 
           <form
@@ -1040,7 +1045,7 @@ export default function LandingPage() {
             <div className="col-span-2 md:col-span-1">
               <h3 className="text-white font-bold text-lg mb-3">ScopePad</h3>
               <p className="text-sm leading-relaxed">
-                AI-powered proposals and client portal for freelancers who value their time.
+                The fastest path from &ldquo;send me a proposal&rdquo; to money in the bank.
               </p>
             </div>
             <div>
