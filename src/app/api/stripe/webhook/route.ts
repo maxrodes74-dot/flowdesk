@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import crypto from "crypto";
+import { trackServerEvent } from "@/lib/analytics";
 
 // Verify Stripe webhook signature
 function verifyStripeSignature(
@@ -110,6 +111,25 @@ export async function POST(request: Request) {
             return NextResponse.json(
               { error: "Failed to update invoice" },
               { status: 500 }
+            );
+          }
+
+          // Track payment completion event
+          const { data: invoice } = await supabase
+            .from("invoices")
+            .select("total")
+            .eq("id", invoiceId)
+            .single();
+
+          if (invoice) {
+            await trackServerEvent(
+              (session as Record<string, unknown>).customer as string || "unknown",
+              "payment_completed",
+              {
+                invoiceId,
+                amount: invoice.total,
+                stripeSessionId: session.id,
+              }
             );
           }
 

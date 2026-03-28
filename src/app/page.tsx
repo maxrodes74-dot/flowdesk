@@ -136,6 +136,7 @@ export default function LandingPage() {
   const [demoProposal, setDemoProposal] = useState<string | null>(null);
   const [demoEmail, setDemoEmail] = useState('');
   const [demoEmailSubmitted, setDemoEmailSubmitted] = useState(false);
+  const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'annual'>('monthly');
 
   // Scroll-triggered section refs
   const features = useInView();
@@ -609,6 +610,34 @@ export default function LandingPage() {
             <p className="text-xl text-gray-600">
               No hidden fees. No surprises. Cancel anytime.
             </p>
+
+            {/* Billing Toggle */}
+            <div className="mt-8 flex items-center justify-center gap-4">
+              <span className={`text-sm font-medium ${billingPeriod === 'monthly' ? 'text-gray-900' : 'text-gray-500'}`}>
+                Monthly
+              </span>
+              <button
+                onClick={() => setBillingPeriod(billingPeriod === 'monthly' ? 'annual' : 'monthly')}
+                className="relative inline-flex items-center h-8 w-14 rounded-full bg-gray-300 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                style={{
+                  backgroundColor: billingPeriod === 'annual' ? '#2563eb' : '#d1d5db',
+                }}
+              >
+                <span
+                  className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${
+                    billingPeriod === 'annual' ? 'translate-x-7' : 'translate-x-1'
+                  }`}
+                />
+              </button>
+              <span className={`text-sm font-medium ${billingPeriod === 'annual' ? 'text-gray-900' : 'text-gray-500'}`}>
+                Annual
+              </span>
+              {billingPeriod === 'annual' && (
+                <span className="inline-block ml-2 px-3 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded-full">
+                  Save 20%
+                </span>
+              )}
+            </div>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
@@ -650,11 +679,13 @@ export default function LandingPage() {
               <h3 className="text-2xl font-bold text-gray-900 mb-1">Pro</h3>
               <p className="text-gray-500 text-sm mb-4">For growing freelancers</p>
               <p className="mb-6">
-                <span className="text-5xl font-extrabold text-gray-900">$12</span>
-                <span className="text-gray-500">/mo</span>
+                <span className="text-5xl font-extrabold text-gray-900">
+                  {billingPeriod === 'monthly' ? '$12' : '$115'}
+                </span>
+                <span className="text-gray-500">{billingPeriod === 'monthly' ? '/mo' : '/year'}</span>
               </p>
               <Link
-                href="/signup"
+                href={billingPeriod === 'monthly' ? '/signup?plan=pro' : '/signup?plan=pro&billing=annual'}
                 className="w-full px-6 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 shadow-md hover:shadow-lg transition-all inline-block text-center mb-8"
               >
                 Start Free Trial
@@ -681,11 +712,13 @@ export default function LandingPage() {
               <h3 className="text-2xl font-bold text-gray-900 mb-1">Pro+</h3>
               <p className="text-gray-500 text-sm mb-4">For serious freelance businesses</p>
               <p className="mb-6">
-                <span className="text-5xl font-extrabold text-gray-900">$19</span>
-                <span className="text-gray-500">/mo</span>
+                <span className="text-5xl font-extrabold text-gray-900">
+                  {billingPeriod === 'monthly' ? '$19' : '$182'}
+                </span>
+                <span className="text-gray-500">{billingPeriod === 'monthly' ? '/mo' : '/year'}</span>
               </p>
               <Link
-                href="/signup"
+                href={billingPeriod === 'monthly' ? '/signup?plan=pro-plus' : '/signup?plan=pro-plus&billing=annual'}
                 className="w-full px-6 py-3 border-2 border-blue-600 text-blue-600 font-semibold rounded-xl hover:bg-blue-50 transition-colors inline-block text-center mb-8"
               >
                 Start Free Trial

@@ -1,5 +1,6 @@
 // Activity logging utility for tracking business events
 import { Message } from "./types";
+import { createClient } from "@supabase/supabase-js";
 
 export type ActivityType =
   | "proposal_sent"
@@ -89,3 +90,46 @@ export const ACTIVITY_TEMPLATES: Record<ActivityType, (data: Record<string, unkn
     description: `${data.duration} of work has been logged.`,
   }),
 };
+
+// Server-side activity logging to database
+export async function logActivity(
+  clientId: string,
+  type: ActivityType,
+  title: string,
+  description: string,
+  metadata?: Record<string, unknown>
+): Promise<boolean> {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!supabaseUrl || !supabaseServiceKey) {
+    console.warn("Supabase not configured for activity logging");
+    return false;
+  }
+
+  try {
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Insert activity as a system message in the messages table
+    const { error } = await supabase
+      .from("messages")
+      .insert({
+        client_id: clientId,
+        sender: "system",
+        body: `[${type}] ${title}: ${description}`,
+        type: "activity",
+        metadata: metadata ? JSON.stringify(metadata) : null,
+        created_at: new Date().toISOString(),
+      });
+
+    if (error) {
+      console.error("Failed to log activity:", error);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error("Activity logging error:", error);
+    return false;
+  }
+}

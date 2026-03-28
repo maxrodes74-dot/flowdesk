@@ -148,23 +148,50 @@ export default function ClientPortalPage() {
     const contract = state.contracts.find((c) => c.id === contractId);
     if (!contract) return;
 
-    // Get IP from a header or use fallback
-    // In a real scenario, you'd get this from the request headers on the server
-    const ipAddress = "0.0.0.0"; // Placeholder - would be obtained from API
+    try {
+      // Fetch IP address from ipify API
+      let ipAddress = "0.0.0.0";
+      try {
+        const ipResponse = await fetch("https://api.ipify.org?format=json");
+        if (ipResponse.ok) {
+          const ipData = await ipResponse.json();
+          ipAddress = ipData.ip;
+        }
+      } catch (e) {
+        console.warn("Failed to fetch IP address, using fallback", e);
+      }
 
-    // Update contract with signature
-    dispatch({
-      type: "UPDATE_CONTRACT",
-      payload: {
-        ...contract,
-        signatureName: signatureName,
-        signatureIp: ipAddress,
-        signedAt: new Date().toISOString(),
-      },
-    });
+      const signedAt = new Date().toISOString();
 
-    setSigningContractId(null);
-    setSignatureName("");
+      // Update contract with signature in local state
+      dispatch({
+        type: "UPDATE_CONTRACT",
+        payload: {
+          ...contract,
+          signatureName: signatureName,
+          signatureIp: ipAddress,
+          signedAt: signedAt,
+        },
+      });
+
+      // In production, also update Supabase
+      // await fetch("/api/contracts/sign", {
+      //   method: "POST",
+      //   headers: { "Content-Type": "application/json" },
+      //   body: JSON.stringify({
+      //     contractId,
+      //     signatureName,
+      //     signatureIp: ipAddress,
+      //     signedAt,
+      //   }),
+      // });
+
+      setSigningContractId(null);
+      setSignatureName("");
+    } catch (error) {
+      console.error("Error signing contract:", error);
+      alert("Failed to sign contract. Please try again.");
+    }
   };
 
   return (

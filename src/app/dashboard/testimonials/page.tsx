@@ -63,16 +63,10 @@ export default function TestimonialsPage() {
     (t) => t.permission_to_use
   ).length;
 
+  const appUrl = typeof window !== 'undefined' ? window.location.origin : 'https://scopepad.io';
   const widgetCode = `<!-- ScopePad Testimonials Widget -->
 <div id="scopepad-testimonials"></div>
-<script src="https://scopepad.io/widget/testimonials.js"></script>
-<script>
-  ScopePad.loadTestimonials({
-    freelancerId: "${state.freelancer?.id}",
-    maxCount: 3,
-    theme: "light"
-  });
-</script>`;
+<script src="${appUrl}/api/testimonials/widget?id=${state.freelancer?.id}"></script>`;
 
   const handleRequestTestimonial = async (e: React.FormEvent) => {
     e.preventDefault();

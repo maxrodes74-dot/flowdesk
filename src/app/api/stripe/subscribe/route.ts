@@ -12,7 +12,10 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json();
-    const { tier } = body as { tier: "pro" | "pro_plus" };
+    const { tier, billingPeriod } = body as {
+      tier: "pro" | "pro_plus";
+      billingPeriod?: "monthly" | "annual";
+    };
 
     if (!tier || !["pro", "pro_plus"].includes(tier)) {
       return NextResponse.json(
@@ -20,6 +23,8 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
+
+    const billing = billingPeriod || "monthly";
 
     const supabase = await createClient();
 
@@ -91,15 +96,26 @@ export async function POST(request: Request) {
       }
     }
 
-    // Determine price ID based on tier
-    const priceId =
-      tier === "pro"
-        ? process.env.STRIPE_PRO_PRICE_ID
-        : process.env.STRIPE_PRO_PLUS_PRICE_ID;
+    // Determine price ID based on tier and billing period
+    let priceId: string | undefined;
+
+    if (tier === "pro") {
+      priceId =
+        billing === "annual"
+          ? process.env.STRIPE_PRO_ANNUAL_PRICE_ID
+          : process.env.STRIPE_PRO_PRICE_ID;
+    } else {
+      priceId =
+        billing === "annual"
+          ? process.env.STRIPE_PRO_PLUS_ANNUAL_PRICE_ID
+          : process.env.STRIPE_PRO_PLUS_PRICE_ID;
+    }
 
     if (!priceId) {
       return NextResponse.json(
-        { error: `Price ID not configured for tier: ${tier}` },
+        {
+          error: `Price ID not configured for tier: ${tier} (${billing})`,
+        },
         { status: 500 }
       );
     }
@@ -125,6 +141,7 @@ export async function POST(request: Request) {
           cancel_url: `${appUrl}/dashboard/settings`,
           "metadata[freelancer_id]": freelancerRow.id,
           "metadata[tier]": tier,
+          "metadata[billing_period]": billing,
         }),
       }
     );

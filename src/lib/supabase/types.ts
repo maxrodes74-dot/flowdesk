@@ -176,6 +176,85 @@ export type Database = {
         }
         Relationships: []
       }
+      referrals: {
+        Row: {
+          id: string
+          referrer_id: string
+          referred_email: string
+          referral_code: string
+          status: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          referrer_id: string
+          referred_email: string
+          referral_code: string
+          status?: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          referrer_id?: string
+          referred_email?: string
+          referral_code?: string
+          status?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referrals_referrer_id_fkey"
+            columns: ["referrer_id"]
+            isOneToOne: false
+            referencedRelation: "freelancers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      testimonials: {
+        Row: {
+          id: string
+          freelancer_id: string
+          client_name: string
+          rating: number
+          text: string
+          permission_to_use: boolean
+          token: string
+          status: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          freelancer_id: string
+          client_name: string
+          rating?: number
+          text?: string
+          permission_to_use?: boolean
+          token: string
+          status?: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          freelancer_id?: string
+          client_name?: string
+          rating?: number
+          text?: string
+          permission_to_use?: boolean
+          token?: string
+          status?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "testimonials_freelancer_id_fkey"
+            columns: ["freelancer_id"]
+            isOneToOne: false
+            referencedRelation: "freelancers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       invoices: {
         Row: {
           client_id: string

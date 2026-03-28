@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
+import { rowToFreelancer, rowToProposal } from "@/lib/supabase/data";
 import { ALL_CLAUSES } from "@/lib/contract-clauses";
 
 // Validate the shape of AI-generated contract clauses
@@ -69,6 +71,8 @@ export async function POST(request: Request) {
 
   // Extract and validate required fields
   const {
+    proposal_id,
+    client_type,
     projectBrief,
     clientType,
     freelancerName,
@@ -78,14 +82,77 @@ export async function POST(request: Request) {
     timeline,
   } = body;
 
-  if (!projectBrief || typeof projectBrief !== "string") {
+  // Support both new format (proposal_id, client_type) and legacy format
+  let brief = projectBrief;
+  let cType = client_type || clientType;
+  let fName = freelancerName;
+  let prof = profession;
+  let rate = hourlyRate;
+  let budgetVal = budget;
+  let timelineVal = timeline;
+
+  // If proposal_id is provided, look it up from Supabase
+  if (proposal_id) {
+    try {
+      const supabase = await createClient();
+
+      // Get proposal
+      const { data: proposalRow, error: proposalError } = await supabase
+        .from("proposals")
+        .select("*")
+        .eq("id", proposal_id as string)
+        .single();
+
+      if (proposalError || !proposalRow) {
+        return NextResponse.json(
+          { error: "Proposal not found" },
+          { status: 404 }
+        );
+      }
+
+      // Get client to determine client type if not provided
+      const { data: clientRow } = await supabase
+        .from("clients")
+        .select("*")
+        .eq("id", proposalRow.client_id)
+        .single();
+
+      // Get freelancer details
+      const { data: freelancerRow } = await supabase
+        .from("freelancers")
+        .select("*")
+        .eq("id", proposalRow.freelancer_id)
+        .single();
+
+      if (freelancerRow) {
+        const freelancer = rowToFreelancer(freelancerRow);
+        fName = freelancer.name;
+        prof = freelancer.profession;
+        rate = freelancer.hourlyRate;
+      }
+
+      brief = proposalRow.brief as string;
+      budgetVal = proposalRow.budget as string;
+      timelineVal = proposalRow.timeline as string;
+
+      // If client_type not provided, try to infer from client.company or default to 'individual'
+      if (!cType && clientRow) {
+        cType = clientRow.company ? "corporate" : "individual";
+      }
+    } catch (error) {
+      console.error("Error fetching proposal details:", error);
+      // Fall back to using provided values
+    }
+  }
+
+  if (!brief || typeof brief !== "string") {
     return NextResponse.json(
-      { error: "Missing or invalid projectBrief" },
+      { error: "Missing or invalid project brief" },
       { status: 400 }
     );
   }
 
-  if (projectBrief.length > MAX_BRIEF_LENGTH) {
+  if (brief.length > MAX_BRIEF_LENGTH) {
     return NextResponse.json(
       {
         error: `Project brief exceeds maximum length of ${MAX_BRIEF_LENGTH} characters`,
@@ -98,9 +165,7 @@ export async function POST(request: Request) {
 
   // If no API key configured, fall back to template generation
   if (!apiKey) {
-    const selectedClauseIds = getDefaultClausesByClientType(
-      clientType as string
-    );
+    const selectedClauseIds = getDefaultClausesByClientType(cType as string);
     return NextResponse.json({
       clauseIds: selectedClauseIds,
       reasoning: "Contract clauses selected based on client type (fallback mode)",
@@ -131,15 +196,15 @@ Respond ONLY with valid JSON in this exact format:
     const userPrompt = `Generate contract clauses for:
 
 Freelancer Profile:
-- Name: ${freelancerName || "Freelancer"}
-- Profession: ${profession || "Service Provider"}
-- Hourly Rate: $${hourlyRate || "50"}/hr
+- Name: ${fName || "Freelancer"}
+- Profession: ${prof || "Service Provider"}
+- Hourly Rate: $${rate || "50"}/hr
 
 Project Details:
-- Brief: ${projectBrief}
-- Timeline: ${timeline || "Not specified"}
-- Budget: ${budget || "Not specified"}
-- Client Type: ${clientType || "individual"}
+- Brief: ${brief}
+- Timeline: ${timelineVal || "Not specified"}
+- Budget: ${budgetVal || "Not specified"}
+- Client Type: ${cType || "individual"}
 
 Select one clause from each category that best fits this project.`;
 
@@ -186,9 +251,7 @@ Select one clause from each category that best fits this project.`;
     return NextResponse.json(contractData);
   } catch (error) {
     console.error("AI generation failed, falling back to template:", error);
-    const selectedClauseIds = getDefaultClausesByClientType(
-      clientType as string
-    );
+    const selectedClauseIds = getDefaultClausesByClientType(cType as string);
     return NextResponse.json({
       clauseIds: selectedClauseIds,
       reasoning: "Contract clauses selected based on client type (fallback mode)",

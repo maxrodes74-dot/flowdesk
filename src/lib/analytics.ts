@@ -34,6 +34,41 @@ declare global {
   }
 }
 
+// Server-side tracking function for API routes
+export async function trackServerEvent(
+  distinctId: string,
+  event: string,
+  properties?: Record<string, unknown>
+): Promise<boolean> {
+  const apiKey = process.env.POSTHOG_API_KEY || process.env.NEXT_PUBLIC_POSTHOG_KEY;
+
+  if (!apiKey) {
+    // Gracefully no-op if key not set
+    return false;
+  }
+
+  try {
+    const response = await fetch("https://us.i.posthog.com/capture", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        api_key: apiKey,
+        event,
+        distinct_id: distinctId,
+        properties: properties || {},
+        timestamp: new Date().toISOString(),
+      }),
+    });
+
+    return response.ok;
+  } catch (error) {
+    console.error("Failed to track server event:", error);
+    return false;
+  }
+}
+
 export const analytics = {
   // Proposal events
   captureProposalGenerated: (proposalId: string, clientId: string) => {
