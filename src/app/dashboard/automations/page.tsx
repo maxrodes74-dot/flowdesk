@@ -70,7 +70,8 @@ export default function AutomationsPage() {
         const newConfigs = { ...DEFAULT_CONFIGS };
         for (const automation of automations) {
           const type = automation.type as keyof AutomationState;
-          newConfigs[type] = { ...DEFAULT_CONFIGS[type], ...(automation.config || {}) };
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (newConfigs as any)[type] = { ...DEFAULT_CONFIGS[type], ...(automation.config as object || {}) };
         }
         setConfigs(newConfigs);
       }
@@ -97,14 +98,16 @@ export default function AutomationsPage() {
         // Update
         await supabase
           .from("automations")
-          .update({ config })
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          .update({ config: config as any })
           .eq("id", existing.id);
       } else {
         // Insert
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         await supabase.from("automations").insert({
           freelancer_id: state.freelancer.id,
           type,
-          config,
+          config: config as any,
           enabled: (config as any).enabled || false,
         });
       }

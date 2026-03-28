@@ -146,6 +146,114 @@ export async function POST(request: Request) {
         break;
       }
 
+      case "customer.subscription.created": {
+        const subscription = event.data.object as {
+          id: string;
+          customer: string;
+          metadata?: Record<string, string>;
+        };
+        const freelancerId = subscription.metadata?.freelancer_id;
+        const tier = subscription.metadata?.tier;
+
+        if (freelancerId && tier && ["pro", "pro+"].includes(tier)) {
+          // NOTE: Requires database migration to add subscription_tier and stripe_subscription_id columns to freelancers table
+          const updateData: Record<string, string> = {};
+
+          // Try to update subscription_tier (will fail gracefully if column doesn't exist)
+          try {
+            const { error } = await supabase
+              .from("freelancers")
+              .update({
+                subscription_tier: tier === "pro+" ? "pro_plus" : tier,
+                stripe_subscription_id: subscription.id,
+              } as Record<string, unknown>)
+              .eq("id", freelancerId);
+
+            if (error) {
+              console.error("Failed to update freelancer tier:", error);
+            } else {
+              console.log(
+                `Freelancer ${freelancerId} subscribed to ${tier} tier`
+              );
+            }
+          } catch (e) {
+            console.error("Subscription columns may not exist yet:", e);
+          }
+        }
+        break;
+      }
+
+      case "customer.subscription.updated": {
+        const subscription = event.data.object as {
+          id: string;
+          customer: string;
+          status: string;
+          metadata?: Record<string, string>;
+        };
+        const freelancerId = subscription.metadata?.freelancer_id;
+        const tier = subscription.metadata?.tier;
+
+        if (freelancerId && tier && ["pro", "pro+"].includes(tier)) {
+          // If subscription is active, update tier
+          if (subscription.status === "active") {
+            try {
+              const { error } = await supabase
+                .from("freelancers")
+                .update({
+                  subscription_tier: tier === "pro+" ? "pro_plus" : tier,
+                  stripe_subscription_id: subscription.id,
+                } as Record<string, unknown>)
+                .eq("id", freelancerId);
+
+              if (error) {
+                console.error("Failed to update freelancer tier:", error);
+              } else {
+                console.log(
+                  `Freelancer ${freelancerId} tier updated to ${tier}`
+                );
+              }
+            } catch (e) {
+              console.error("Subscription columns may not exist yet:", e);
+            }
+          }
+        }
+        break;
+      }
+
+      case "customer.subscription.deleted": {
+        const subscription = event.data.object as {
+          id: string;
+          customer: string;
+          metadata?: Record<string, string>;
+        };
+        const freelancerId = subscription.metadata?.freelancer_id;
+
+        if (freelancerId) {
+          try {
+            const { error } = await supabase
+              .from("freelancers")
+              .update({
+                subscription_tier: "free",
+              } as Record<string, unknown>)
+              .eq("id", freelancerId);
+
+            if (error) {
+              console.error(
+                "Failed to downgrade freelancer to free tier:",
+                error
+              );
+            } else {
+              console.log(
+                `Freelancer ${freelancerId} downgraded to free tier`
+              );
+            }
+          } catch (e) {
+            console.error("Subscription columns may not exist yet:", e);
+          }
+        }
+        break;
+      }
+
       default:
         // Unhandled event type — acknowledge receipt
         break;

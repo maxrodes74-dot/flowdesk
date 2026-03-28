@@ -1,9 +1,23 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { CheckCircle, ArrowRight } from "lucide-react";
+import { CheckCircle, ArrowRight, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
+
+interface FreelancerData {
+  id: string;
+  name: string;
+  profession: string;
+  hourlyRate: number;
+  description: string;
+  services: string[];
+  testimonials: Array<{
+    clientName: string;
+    text: string;
+    rating: number;
+  }>;
+}
 
 export default function ReferralPage({
   params,
@@ -11,29 +25,70 @@ export default function ReferralPage({
   params: { code: string };
 }) {
   const [referralCode] = useState(params.code);
+  const [freelancer, setFreelancer] = useState<FreelancerData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  // Mock data for referred freelancer
-  const freelancer = {
-    name: "Alex Johnson",
-    profession: "Web Developer",
-    rating: 4.9,
-    reviews: 47,
-    hourlyRate: 85,
-    description: "Full-stack web development with 8+ years of experience",
-    services: ["React", "Node.js", "PostgreSQL", "AWS"],
-    testimonials: [
-      {
-        name: "Client A",
-        text: "Exceptional work and great communication",
-        rating: 5,
-      },
-      {
-        name: "Client B",
-        text: "Delivered on time and exceeded expectations",
-        rating: 5,
-      },
-    ],
+  useEffect(() => {
+    const fetchFreelancer = async () => {
+      try {
+        const response = await fetch(
+          `/api/referrals?code=${encodeURIComponent(referralCode)}`
+        );
+        if (!response.ok) {
+          throw new Error("Failed to fetch referral data");
+        }
+        const data = await response.json();
+        setFreelancer(data.freelancer);
+      } catch (err) {
+        setError("Invalid or expired referral code");
+        setLoading(false);
+      }
+    };
+
+    fetchFreelancer();
+  }, [referralCode]);
+
+  const handleSignUp = () => {
+    const signupUrl = `/auth/signup?referral_code=${encodeURIComponent(
+      referralCode
+    )}`;
+    window.location.href = signupUrl;
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-gray-600">Loading referral information...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !freelancer) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex items-center justify-center px-4">
+        <div className="max-w-md w-full text-center">
+          <div className="bg-white rounded-lg border border-gray-200 p-8">
+            <AlertCircle className="mx-auto text-red-600 mb-4" size={48} />
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">
+              Invalid Referral Link
+            </h1>
+            <p className="text-gray-600 mb-6">
+              {error || "This referral link is no longer valid."}
+            </p>
+            <Link
+              href="/"
+              className="inline-block px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Back to Home
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const benefits = [
     {
@@ -74,7 +129,8 @@ export default function ReferralPage({
             Meet {freelancer.name}
           </h1>
           <p className="text-xl text-gray-600 max-w-2xl">
-            A trusted freelancer recommended by a colleague. Start your first project with a special discount.
+            A trusted freelancer recommended by a colleague. Start your first
+            project with a special discount.
           </p>
         </div>
 
@@ -90,10 +146,6 @@ export default function ReferralPage({
                   <p className="text-gray-600 mt-1">{freelancer.profession}</p>
                 </div>
                 <div className="text-right">
-                  <div className="flex items-center gap-1 mb-1">
-                    {"★".repeat(5)}
-                    <span className="text-gray-500">({freelancer.reviews})</span>
-                  </div>
                   <p className="font-semibold text-gray-900">
                     ${freelancer.hourlyRate}/hr
                   </p>
@@ -120,26 +172,30 @@ export default function ReferralPage({
               </div>
 
               {/* Testimonials */}
-              <div className="border-t border-gray-200 pt-6">
-                <h3 className="font-semibold text-gray-900 mb-4">
-                  Client Testimonials
-                </h3>
-                <div className="space-y-4">
-                  {freelancer.testimonials.map((testimonial, i) => (
-                    <div key={i} className="bg-gray-50 rounded-lg p-4">
-                      <div className="flex items-center justify-between mb-2">
-                        <p className="font-medium text-gray-900">
-                          {testimonial.name}
+              {freelancer.testimonials.length > 0 && (
+                <div className="border-t border-gray-200 pt-6">
+                  <h3 className="font-semibold text-gray-900 mb-4">
+                    Client Testimonials
+                  </h3>
+                  <div className="space-y-4">
+                    {freelancer.testimonials.map((testimonial, i) => (
+                      <div key={i} className="bg-gray-50 rounded-lg p-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <p className="font-medium text-gray-900">
+                            {testimonial.clientName}
+                          </p>
+                          <span className="text-yellow-400">
+                            {"★".repeat(testimonial.rating)}
+                          </span>
+                        </div>
+                        <p className="text-gray-700 text-sm">
+                          {testimonial.text}
                         </p>
-                        <span className="text-yellow-400">{"★".repeat(testimonial.rating)}</span>
                       </div>
-                      <p className="text-gray-700 text-sm">
-                        {testimonial.text}
-                      </p>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
 
@@ -172,13 +228,17 @@ export default function ReferralPage({
                 </div>
               </div>
 
-              <button className="w-full px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 mb-3">
+              <button
+                onClick={handleSignUp}
+                className="w-full px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 mb-3"
+              >
                 Get Started
                 <ArrowRight size={18} />
               </button>
 
               <p className="text-xs text-gray-500 text-center">
-                Referral code: <span className="font-mono font-semibold">{referralCode}</span>
+                Referral code:{" "}
+                <span className="font-mono font-semibold">{referralCode}</span>
               </p>
             </div>
           </div>
@@ -192,7 +252,7 @@ export default function ReferralPage({
               {
                 step: 1,
                 title: "Sign Up",
-                description: "Create your FlowDesk account or log in",
+                description: "Create your FlowDesk account with the referral code",
               },
               {
                 step: 2,

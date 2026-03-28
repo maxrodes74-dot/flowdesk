@@ -34,7 +34,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const proposal = body as ProposalData;
+  const proposal = body as unknown as ProposalData;
 
   // Validate required fields
   if (!proposal.title || !proposal.clientName || !proposal.scope) {
@@ -257,16 +257,38 @@ export async function POST(request: Request) {
     }
     
     @media print {
+      * {
+        box-shadow: none !important;
+        text-shadow: none !important;
+      }
+
       body {
         padding: 0;
+        margin: 0;
+        background-color: white;
       }
-      
+
       .container {
         max-width: 100%;
+        margin: 0;
       }
-      
+
       @page {
         margin: 0.5in;
+        size: letter;
+      }
+
+      a {
+        text-decoration: none;
+        color: inherit;
+      }
+
+      img {
+        max-width: 100%;
+      }
+
+      .no-print {
+        display: none !important;
       }
     }
   </style>
@@ -340,9 +362,17 @@ export async function POST(request: Request) {
 </html>
     `;
 
-    return NextResponse.json({
-      html,
-      filename: `${proposal.title.replace(/[^a-z0-9]/gi, "-").toLowerCase()}-proposal.html`,
+    // Return HTML with proper headers for download
+    // Browsers can Print-to-PDF this, or developers can use jsPDF for client-side PDF generation
+    const filename = `${proposal.title.replace(/[^a-z0-9]/gi, "-").toLowerCase()}-proposal.html`;
+
+    return new NextResponse(html, {
+      status: 200,
+      headers: {
+        "Content-Type": "text/html; charset=utf-8",
+        "Content-Disposition": `attachment; filename="${filename}"`,
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+      },
     });
   } catch (error) {
     console.error("PDF export error:", error);

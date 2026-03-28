@@ -14,6 +14,7 @@ import {
 import { useApp } from "@/lib/store";
 import { formatCurrency, formatDate, getStatusColor } from "@/lib/utils";
 import { cn } from "@/lib/utils";
+import { DashboardTimerWidget } from "@/components/dashboard/dashboard-timer-widget";
 
 interface StatCard {
   label: string;
@@ -133,6 +134,13 @@ export default function DashboardPage() {
           Welcome back, {state.freelancer?.name || "Freelancer"}
         </h1>
         <p className="text-gray-600 mt-2">{formattedDate}</p>
+      </div>
+
+      {/* Timer Widget */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+        <div className="lg:col-span-2">
+          <DashboardTimerWidget />
+        </div>
       </div>
 
       {/* Stats Grid */}

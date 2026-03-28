@@ -10,8 +10,8 @@ import {
   ServiceRevenueChart,
 } from "@/components/dashboard/revenue-chart";
 
-// Mock data generators
-function generateMonthlyData() {
+// Calculate monthly revenue data from invoices
+function calculateMonthlyData(invoices: any[]) {
   const months = [
     "Jan",
     "Feb",
@@ -26,27 +26,82 @@ function generateMonthlyData() {
     "Nov",
     "Dec",
   ];
+
+  const monthlyRevenue: { [key: number]: number } = {};
+  const monthlyInvoiced: { [key: number]: number } = {};
+
+  invoices.forEach((invoice) => {
+    const date = new Date(invoice.createdAt);
+    const month = date.getMonth();
+
+    if (!monthlyRevenue[month]) monthlyRevenue[month] = 0;
+    if (!monthlyInvoiced[month]) monthlyInvoiced[month] = 0;
+
+    if (invoice.status === "paid") {
+      monthlyRevenue[month] += invoice.total;
+    }
+    monthlyInvoiced[month] += invoice.total;
+  });
+
   return months.map((month, i) => ({
     month,
-    revenue: Math.floor(Math.random() * 8000) + 2000,
-    invoiced: Math.floor(Math.random() * 5000) + 1000,
+    revenue: monthlyRevenue[i] || 0,
+    invoiced: monthlyInvoiced[i] || 0,
   }));
 }
 
-function generateClientData(clients: any[]) {
-  return clients.slice(0, 5).map((client) => ({
-    name: client.name,
-    value: Math.floor(Math.random() * 15000) + 2000,
-  }));
+// Calculate revenue by client from invoices
+function calculateClientData(invoices: any[], clients: any[]) {
+  const clientRevenue: { [key: string]: { name: string; value: number } } = {};
+
+  invoices
+    .filter((i) => i.status === "paid")
+    .forEach((invoice) => {
+      if (!clientRevenue[invoice.clientId]) {
+        const client = clients.find((c) => c.id === invoice.clientId);
+        clientRevenue[invoice.clientId] = {
+          name: client?.name || "Unknown Client",
+          value: 0,
+        };
+      }
+      clientRevenue[invoice.clientId].value += invoice.total;
+    });
+
+  return Object.values(clientRevenue)
+    .sort((a, b) => b.value - a.value)
+    .slice(0, 5);
 }
 
-function generateServiceData() {
-  return [
-    { service: "Web Development", amount: 45000, percentage: 45 },
-    { service: "UI/UX Design", amount: 28000, percentage: 28 },
-    { service: "Consulting", amount: 18000, percentage: 18 },
-    { service: "Other", amount: 9000, percentage: 9 },
-  ];
+// Calculate revenue by service from invoice line items
+function calculateServiceData(invoices: any[]) {
+  const serviceRevenue: { [key: string]: number } = {};
+  let totalServiceRevenue = 0;
+
+  invoices
+    .filter((i) => i.status === "paid")
+    .forEach((invoice) => {
+      invoice.lineItems.forEach((item: any) => {
+        const service = item.description || "Other Services";
+        if (!serviceRevenue[service]) {
+          serviceRevenue[service] = 0;
+        }
+        const itemTotal = item.quantity * item.rate;
+        serviceRevenue[service] += itemTotal;
+        totalServiceRevenue += itemTotal;
+      });
+    });
+
+  if (totalServiceRevenue === 0) {
+    return [];
+  }
+
+  return Object.entries(serviceRevenue)
+    .map(([service, amount]) => ({
+      service,
+      amount: amount as number,
+      percentage: Math.round(((amount as number) / totalServiceRevenue) * 100),
+    }))
+    .sort((a, b) => b.amount - a.amount);
 }
 
 interface MetricCard {
@@ -81,9 +136,9 @@ export default function RevenuePage() {
       ? totalInvoiced / state.invoices.length
       : 0;
 
-  const monthlyData = generateMonthlyData();
-  const clientData = generateClientData(state.clients);
-  const serviceData = generateServiceData();
+  const monthlyData = calculateMonthlyData(state.invoices);
+  const clientData = calculateClientData(state.invoices, state.clients);
+  const serviceData = calculateServiceData(state.invoices);
 
   // Calculate funnel data
   const funnelData = [
@@ -192,7 +247,13 @@ export default function RevenuePage() {
         <h2 className="text-lg font-semibold text-gray-900 mb-4">
           Monthly Revenue Trend
         </h2>
-        <RevenueChart data={monthlyData} />
+        {state.invoices.length === 0 ? (
+          <div className="flex items-center justify-center h-64 text-gray-500">
+            <p>No invoice data yet. Create your first invoice to see revenue trends.</p>
+          </div>
+        ) : (
+          <RevenueChart data={monthlyData} />
+        )}
       </div>
 
       {/* Revenue by Client & Service */}
@@ -201,13 +262,25 @@ export default function RevenuePage() {
           <h2 className="text-lg font-semibold text-gray-900 mb-4">
             Revenue by Client
           </h2>
-          <ClientRevenueChart data={clientData} />
+          {clientData.length === 0 ? (
+            <div className="flex items-center justify-center h-64 text-gray-500">
+              <p>No client revenue data yet. Mark invoices as paid to see breakdown.</p>
+            </div>
+          ) : (
+            <ClientRevenueChart data={clientData} />
+          )}
         </div>
         <div className="bg-white rounded-lg border border-gray-200 p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">
             Revenue by Service
           </h2>
-          <ServiceRevenueChart data={serviceData} />
+          {serviceData.length === 0 ? (
+            <div className="flex items-center justify-center h-64 text-gray-500">
+              <p>No service revenue data yet. Create and pay invoices to see breakdown.</p>
+            </div>
+          ) : (
+            <ServiceRevenueChart data={serviceData} />
+          )}
         </div>
       </div>
 

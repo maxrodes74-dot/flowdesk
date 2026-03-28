@@ -30,7 +30,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const { freelancerId, proposalId } = body as RequestBody;
+    const { freelancerId, proposalId } = body as unknown as RequestBody;
 
     if (!freelancerId || !proposalId) {
       return NextResponse.json(
@@ -72,7 +72,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const config = automationRow.config as ProjectWrapUpConfig;
+    const config = automationRow.config as unknown as ProjectWrapUpConfig;
 
     // Get proposal
     const { data: proposalRow } = await supabase
@@ -111,7 +111,17 @@ export async function POST(request: Request) {
       .select("*")
       .eq("proposal_id", proposalId);
 
-    const milestones = milestoneRows || [];
+    const milestones = (milestoneRows || []).map((m: Record<string, unknown>) => ({
+      id: m.id as string,
+      proposalId: m.proposal_id as string,
+      title: m.title as string,
+      description: m.description as string,
+      dueDate: m.due_date as string,
+      status: m.status as "pending" | "in_progress" | "completed",
+      sortOrder: m.sort_order as number,
+      invoiceId: m.invoice_id as string | null,
+      createdAt: m.created_at as string,
+    }));
 
     // Check if project is complete
     const isComplete = checkProjectCompletion(proposal, milestones);
@@ -169,24 +179,84 @@ export async function POST(request: Request) {
   }
 }
 
-// GET endpoint to check project completion status
+// GET endpoint: Called by Vercel cron scheduler (requires CRON_SECRET)
+// Also supports testing with freelancerId and proposalId query parameters
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const freelancerId = searchParams.get("freelancerId");
-  const proposalId = searchParams.get("proposalId");
+  const cronSecret = request.headers.get("authorization");
+  const expectedSecret = `Bearer ${process.env.CRON_SECRET}`;
 
-  if (!freelancerId || !proposalId) {
+  // If CRON_SECRET is set, verify it
+  if (process.env.CRON_SECRET && cronSecret !== expectedSecret) {
     return NextResponse.json(
-      { error: "freelancerId and proposalId query parameters required" },
-      { status: 400 }
+      { error: "Unauthorized" },
+      { status: 401 }
     );
   }
 
-  // Call POST endpoint
-  return POST(
-    new Request(request.url, {
-      method: "POST",
-      body: JSON.stringify({ freelancerId, proposalId }),
-    })
-  );
+  try {
+    const supabase = await createClient();
+
+    // Get all freelancers with wrap-up automation enabled
+    const { data: automationRows, error: automationError } = await supabase
+      .from("automations")
+      .select("freelancer_id")
+      .eq("type", "project_wrap_up")
+      .eq("enabled", true);
+
+    if (automationError || !automationRows) {
+      return NextResponse.json(
+        { error: "Failed to fetch automations" },
+        { status: 500 }
+      );
+    }
+
+    // For each freelancer with wrap-up enabled, find completed proposals
+    const results = [];
+    for (const automation of automationRows) {
+      const freelancerId = automation.freelancer_id;
+
+      // Get completed proposals for this freelancer
+      const { data: proposalRows } = await supabase
+        .from("proposals")
+        .select("*")
+        .eq("freelancer_id", freelancerId)
+        .eq("status", "approved");
+
+      if (!proposalRows) continue;
+
+      // Check each proposal for completion and run wrap-up
+      for (const proposal of proposalRows) {
+        const response = await POST(
+          new Request(request.url, {
+            method: "POST",
+            body: JSON.stringify({
+              freelancerId,
+              proposalId: proposal.id,
+            }),
+          })
+        );
+
+        const data = await response.json();
+        results.push({
+          freelancerId,
+          proposalId: proposal.id,
+          status: response.status,
+          data,
+        });
+      }
+    }
+
+    return NextResponse.json({
+      success: true,
+      automationsRun: results.length,
+      results,
+    });
+  } catch (error) {
+    console.error("Wrap-up cron execution error:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
 }

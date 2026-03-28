@@ -36,7 +36,7 @@ export async function POST(request: Request) {
       clientId,
       proposalId,
       clientMessage,
-    } = body as RequestBody;
+    } = body as unknown as RequestBody;
 
     if (!freelancerId || !clientId || !proposalId || !clientMessage) {
       return NextResponse.json(
@@ -82,7 +82,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const config = automationRow.config as ScopeCreepConfig;
+    const config = automationRow.config as unknown as ScopeCreepConfig;
 
     // Get proposal
     const { data: proposalRow } = await supabase

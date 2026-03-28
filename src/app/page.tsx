@@ -133,6 +133,9 @@ export default function LandingPage() {
   const [email, setEmail] = useState('');
   const [demoInput, setDemoInput] = useState('');
   const [demoGenerating, setDemoGenerating] = useState(false);
+  const [demoProposal, setDemoProposal] = useState<string | null>(null);
+  const [demoEmail, setDemoEmail] = useState('');
+  const [demoEmailSubmitted, setDemoEmailSubmitted] = useState(false);
 
   // Scroll-triggered section refs
   const features = useInView();
@@ -150,6 +153,44 @@ export default function LandingPage() {
   const scrollToSection = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
     setIsMenuOpen(false);
+  };
+
+  const handleDemoGenerate = async () => {
+    if (!demoInput.trim()) return;
+
+    setDemoGenerating(true);
+    setDemoProposal(null);
+    setDemoEmail('');
+    setDemoEmailSubmitted(false);
+
+    try {
+      const response = await fetch('/api/generate-proposal', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          projectBrief: demoInput,
+          freelancerProfile: {
+            name: 'Demo Freelancer',
+            title: 'Web Developer & Designer',
+            email: 'demo@flowdesk.local',
+          },
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setDemoProposal(data.proposal || JSON.stringify(data, null, 2));
+      } else {
+        setDemoProposal('Error generating proposal. Please try again or sign up to use the full version.');
+      }
+    } catch (error) {
+      console.error('Demo generation error:', error);
+      setDemoProposal('Unable to generate proposal. Please sign up to try the full version.');
+    } finally {
+      setDemoGenerating(false);
+    }
   };
 
   // Shared fade-in class helper
@@ -775,9 +816,9 @@ export default function LandingPage() {
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none text-gray-900 placeholder-gray-500"
                 />
                 <button
-                  onClick={() => setDemoGenerating(true)}
-                  onAnimationEnd={() => setDemoGenerating(false)}
-                  className="mt-4 w-full px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors inline-flex items-center justify-center gap-2"
+                  onClick={handleDemoGenerate}
+                  disabled={demoGenerating || !demoInput.trim()}
+                  className="mt-4 w-full px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors inline-flex items-center justify-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed"
                 >
                   <Sparkles size={18} />
                   Generate Proposal
@@ -800,41 +841,53 @@ export default function LandingPage() {
                         <p className="text-gray-600">Generating proposal...</p>
                       </div>
                     </div>
-                  ) : demoInput ? (
+                  ) : demoProposal ? (
                     <div>
-                      <h4 className="font-bold text-gray-900 text-lg mb-3">
-                        Project Scope & Proposal
-                      </h4>
-                      <div className="space-y-3 text-sm">
-                        <div>
-                          <p className="font-semibold text-gray-900">Deliverables:</p>
-                          <ul className="list-disc list-inside text-gray-700 mt-1">
-                            <li>WordPress website setup</li>
-                            <li>Online ordering system integration</li>
-                            <li>Product menu management</li>
-                            <li>Image gallery with lightbox</li>
-                          </ul>
+                      {!demoEmailSubmitted ? (
+                        <div className="space-y-4">
+                          <p className="text-sm text-gray-600">
+                            Your proposal is ready! Enter your email to see the full proposal and download it as PDF.
+                          </p>
+                          <input
+                            type="email"
+                            value={demoEmail}
+                            onChange={(e) => setDemoEmail(e.target.value)}
+                            placeholder="your@email.com"
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 placeholder-gray-500"
+                          />
+                          <button
+                            onClick={() => {
+                              if (demoEmail.trim()) {
+                                setDemoEmailSubmitted(true);
+                              }
+                            }}
+                            disabled={!demoEmail.trim()}
+                            className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium disabled:bg-gray-400 disabled:cursor-not-allowed"
+                          >
+                            Get Full Proposal
+                          </button>
                         </div>
+                      ) : (
                         <div>
-                          <p className="font-semibold text-gray-900">Timeline:</p>
-                          <p className="text-gray-700">3-4 weeks</p>
+                          <h4 className="font-bold text-gray-900 text-lg mb-3">
+                            AI-Generated Proposal
+                          </h4>
+                          <div className="space-y-3 text-sm whitespace-pre-wrap text-gray-700 font-mono text-xs max-h-72 overflow-y-auto">
+                            {demoProposal}
+                          </div>
+                          <button className="mt-6 w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">
+                            Download as PDF
+                          </button>
                         </div>
-                        <div>
-                          <p className="font-semibold text-gray-900">Budget:</p>
-                          <p className="text-gray-700">$2,800 - $3,200</p>
-                        </div>
-                        <div>
-                          <p className="font-semibold text-gray-900">Payment Terms:</p>
-                          <p className="text-gray-700">50% upfront, 50% on completion</p>
-                        </div>
-                      </div>
-                      <button className="mt-6 w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">
-                        Download as PDF
-                      </button>
+                      )}
+                    </div>
+                  ) : demoInput ? (
+                    <div className="flex items-center justify-center h-full text-gray-500">
+                      <p>Click "Generate Proposal" to create your proposal...</p>
                     </div>
                   ) : (
                     <div className="flex items-center justify-center h-full text-gray-500">
-                      <p>Proposal will appear here...</p>
+                      <p>Enter your project brief to get started...</p>
                     </div>
                   )}
                 </div>

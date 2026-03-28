@@ -44,7 +44,7 @@ export async function POST(request: Request) {
     tone,
     services,
     hourlyRate,
-  } = body as RegenerationRequest;
+  } = body as unknown as RegenerationRequest;
 
   // Validate inputs
   if (!section || !validateSectionInput(section)) {

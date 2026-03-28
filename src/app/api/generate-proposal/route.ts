@@ -105,7 +105,7 @@ export async function POST(request: Request) {
   // Check tier limits for AI generation
   if (
     !canGenerateProposal(
-      subscriptionTier as string,
+      subscriptionTier as import("@/lib/types").SubscriptionTier,
       aiGenerationsUsedThisMonth as number
     )
   ) {
@@ -122,7 +122,7 @@ export async function POST(request: Request) {
 
   // If no API key configured, fall back to template generation
   if (!apiKey) {
-    return NextResponse.json(generateTemplate(clientName, brief, timeline, budget));
+    return NextResponse.json(generateTemplate(String(clientName), String(brief), String(timeline || ""), String(budget || "")));
   }
 
   try {
@@ -220,7 +220,7 @@ Today's date is ${new Date().toISOString().split("T")[0]}. Set milestone due dat
     return NextResponse.json(proposal);
   } catch (error) {
     console.error("AI generation failed, falling back to template:", error);
-    return NextResponse.json(generateTemplate(clientName, brief, timeline, budget));
+    return NextResponse.json(generateTemplate(String(clientName), String(brief), String(timeline || ""), String(budget || "")));
   }
 }
 
