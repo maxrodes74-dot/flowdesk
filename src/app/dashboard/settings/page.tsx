@@ -394,7 +394,7 @@ export default function SettingsPage() {
                 <h3 className="font-medium text-gray-900 mb-4">Upgrade</h3>
                 <div className="grid grid-cols-2 gap-4">
                   <button className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium text-gray-900">
-                    Pro - $9/mo
+                    Pro - $12/mo
                   </button>
                   <button className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium text-gray-900">
                     Pro+ - $19/mo

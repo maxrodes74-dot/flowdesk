@@ -1,4 +1,4 @@
-# Quick Start: FlowDesk Phase 1 Integration
+# Quick Start: ScopePad Phase 1 Integration
 
 ## Prerequisites
 - Supabase project configured

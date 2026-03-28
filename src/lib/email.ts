@@ -27,7 +27,7 @@ async function sendEmail(params: EmailParams): Promise<boolean> {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "FlowDesk <onboarding@resend.dev>",
+        from: "ScopePad <onboarding@resend.dev>",
         to: params.to,
         subject: params.subject,
         html: params.html,
@@ -200,7 +200,7 @@ function getEmailTemplate(name: string, freelancer: Freelancer): EmailTemplate {
 
   return (
     templates[name] || {
-      subject: "Message from FlowDesk",
+      subject: "Message from ScopePad",
       getHtml: () => "<p>No template found</p>",
     }
   );
@@ -476,7 +476,7 @@ export async function sendWeeklyTimeSummaryEmail(
         </div>
 
         <p style="color: #666; font-size: 14px; margin-top: 20px;">
-          Keep track of your time and make sure your clients understand the value you're delivering. If any hours are missing, log them in your FlowDesk dashboard.
+          Keep track of your time and make sure your clients understand the value you're delivering. If any hours are missing, log them in your ScopePad dashboard.
         </p>
 
         <div style="text-align: center; margin-top: 24px;">

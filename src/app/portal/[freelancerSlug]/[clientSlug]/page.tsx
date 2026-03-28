@@ -182,7 +182,7 @@ export default function ClientPortalPage() {
           </div>
           <div className="text-right">
             <p className="text-xs text-gray-400">Powered by</p>
-            <p className="text-sm font-semibold text-gray-600">FlowDesk</p>
+            <p className="text-sm font-semibold text-gray-600">ScopePad</p>
           </div>
         </div>
       </header>

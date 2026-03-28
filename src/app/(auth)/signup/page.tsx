@@ -67,7 +67,7 @@ export default function SignupPage() {
           Create your account
         </h1>
         <p className="text-slate-600 text-sm mt-1">
-          Join thousands of freelancers using FlowDesk
+          Join thousands of freelancers using ScopePad
         </p>
       </div>
 

@@ -18,7 +18,7 @@ export default function SwitchFromHoneyBookPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <Link href="/" className="text-2xl font-bold text-blue-600">
-              FlowDesk
+              ScopePad
             </Link>
             <Link
               href="/signup"
@@ -54,7 +54,7 @@ export default function SwitchFromHoneyBookPage() {
             </h1>
 
             <p className="text-xl md:text-2xl text-gray-600 mb-8 max-w-2xl mx-auto leading-relaxed">
-              FlowDesk does everything you love about HoneyBook—AI proposals, client portals, payment processing—at a fraction of the cost. And it's actually better.
+              ScopePad does everything you love about HoneyBook—AI proposals, client portals, payment processing—at a fraction of the cost. And it's actually better.
             </p>
 
             {/* Hero CTA */}
@@ -82,7 +82,7 @@ export default function SwitchFromHoneyBookPage() {
               Side-by-side comparison
             </p>
             <h2 className="text-4xl md:text-5xl font-bold text-gray-900">
-              FlowDesk vs HoneyBook
+              ScopePad vs HoneyBook
             </h2>
           </div>
 
@@ -91,7 +91,7 @@ export default function SwitchFromHoneyBookPage() {
               <thead>
                 <tr className="border-b border-gray-300">
                   <th className="text-left py-4 px-6 font-semibold text-gray-900">Feature</th>
-                  <th className="text-center py-4 px-6 font-semibold text-blue-600">FlowDesk</th>
+                  <th className="text-center py-4 px-6 font-semibold text-blue-600">ScopePad</th>
                   <th className="text-center py-4 px-6 font-semibold text-gray-500">HoneyBook</th>
                 </tr>
               </thead>
@@ -199,7 +199,7 @@ export default function SwitchFromHoneyBookPage() {
               What you get
             </p>
             <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-              When you switch to FlowDesk
+              When you switch to ScopePad
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
               More than just cheaper pricing. Better tools. Better experience. Better results.
@@ -216,7 +216,7 @@ export default function SwitchFromHoneyBookPage() {
               {
                 icon: <Sparkles className="w-8 h-8 text-indigo-600" />,
                 title: 'AI-Native from Day One',
-                desc: 'FlowDesk is built for AI. Scope creep detection, smart follow-ups, auto-generated invoices, and more.',
+                desc: 'ScopePad is built for AI. Scope creep detection, smart follow-ups, auto-generated invoices, and more.',
               },
               {
                 icon: <Clock className="w-8 h-8 text-emerald-600" />,
@@ -254,7 +254,7 @@ export default function SwitchFromHoneyBookPage() {
               Loved by freelancers
             </p>
             <h2 className="text-4xl md:text-5xl font-bold text-gray-900">
-              What users say about FlowDesk
+              What users say about ScopePad
             </h2>
           </div>
 
@@ -275,7 +275,7 @@ export default function SwitchFromHoneyBookPage() {
               {
                 name: 'Maria L.',
                 role: 'Marketing Consultant',
-                text: 'Setup took literally 3 minutes. No vendor lock-in feeling. FlowDesk just works.',
+                text: 'Setup took literally 3 minutes. No vendor lock-in feeling. ScopePad just works.',
                 initials: 'ML',
               },
             ].map((testimonial, i) => (
@@ -330,7 +330,7 @@ export default function SwitchFromHoneyBookPage() {
 
       {/* Footer */}
       <footer className="py-8 bg-gray-900 text-gray-400 text-center text-sm">
-        <p>&copy; 2026 FlowDesk. All rights reserved.</p>
+        <p>&copy; 2026 ScopePad. All rights reserved.</p>
       </footer>
     </div>
   );

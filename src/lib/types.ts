@@ -1,5 +1,5 @@
 // ============================================================
-// FlowDesk Type Definitions
+// ScopePad Type Definitions
 // ============================================================
 
 export type Profession =

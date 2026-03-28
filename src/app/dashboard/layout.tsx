@@ -118,9 +118,9 @@ export default function DashboardLayout({
               className="flex items-center gap-2 font-bold text-xl text-gray-900 hover:text-blue-600 transition-colors"
             >
               <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white text-sm font-bold">
-                FD
+                SP
               </div>
-              FlowDesk
+              ScopePad
             </Link>
           </div>
 
@@ -172,7 +172,7 @@ export default function DashboardLayout({
           >
             {sidebarOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
-          <h1 className="text-lg font-semibold text-gray-900">FlowDesk</h1>
+          <h1 className="text-lg font-semibold text-gray-900">ScopePad</h1>
         </div>
 
         {/* Page Content */}

@@ -43,7 +43,7 @@ export default function ProposalDetailPage() {
     );
   }
 
-  const portalLink = `flowdesk.app/portal/alex-rivera/${slugify(proposal.clientName)}`;
+  const portalLink = `scopepad.app/portal/alex-rivera/${slugify(proposal.clientName)}`;
 
   const handleCopyPortalLink = () => {
     navigator.clipboard.writeText(portalLink);

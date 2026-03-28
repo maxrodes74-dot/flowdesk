@@ -63,11 +63,11 @@ export default function TestimonialsPage() {
     (t) => t.permission_to_use
   ).length;
 
-  const widgetCode = `<!-- FlowDesk Testimonials Widget -->
-<div id="flowdesk-testimonials"></div>
-<script src="https://flowdesk.io/widget/testimonials.js"></script>
+  const widgetCode = `<!-- ScopePad Testimonials Widget -->
+<div id="scopepad-testimonials"></div>
+<script src="https://scopepad.io/widget/testimonials.js"></script>
 <script>
-  FlowDesk.loadTestimonials({
+  ScopePad.loadTestimonials({
     freelancerId: "${state.freelancer?.id}",
     maxCount: 3,
     theme: "light"

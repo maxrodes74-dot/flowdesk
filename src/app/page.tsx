@@ -174,7 +174,7 @@ export default function LandingPage() {
           freelancerProfile: {
             name: 'Demo Freelancer',
             title: 'Web Developer & Designer',
-            email: 'demo@flowdesk.local',
+            email: 'demo@scopepad.local',
           },
         }),
       });
@@ -214,7 +214,7 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <Link href="/" className="text-2xl font-bold text-blue-600">
-              FlowDesk
+              ScopePad
             </Link>
 
             {/* Desktop links */}
@@ -550,7 +550,7 @@ export default function LandingPage() {
             {[
               {
                 quote:
-                  'I used to spend Sunday evenings writing proposals. Now I paste my notes and FlowDesk has a polished draft in less than two minutes. Game changer.',
+                  'I used to spend Sunday evenings writing proposals. Now I paste my notes and ScopePad has a polished draft in less than two minutes. Game changer.',
                 name: 'Mia Chen',
                 role: 'Brand Strategist',
                 stars: 5,
@@ -564,7 +564,7 @@ export default function LandingPage() {
               },
               {
                 quote:
-                  'Before FlowDesk I had $8K in overdue invoices. Now I rarely wait past 3 days for payment. The auto-reminders are worth the price alone.',
+                  'Before ScopePad I had $8K in overdue invoices. Now I rarely wait past 3 days for payment. The auto-reminders are worth the price alone.',
                 name: 'Priya Sharma',
                 role: 'UX Designer',
                 stars: 5,
@@ -630,7 +630,7 @@ export default function LandingPage() {
                   '3 active clients',
                   '5 AI proposals / month',
                   'Basic invoicing',
-                  'FlowDesk branding',
+                  'ScopePad branding',
                 ].map((item) => (
                   <li key={item} className="flex items-start gap-3">
                     <Check className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
@@ -650,7 +650,7 @@ export default function LandingPage() {
               <h3 className="text-2xl font-bold text-gray-900 mb-1">Pro</h3>
               <p className="text-gray-500 text-sm mb-4">For growing freelancers</p>
               <p className="mb-6">
-                <span className="text-5xl font-extrabold text-gray-900">$19</span>
+                <span className="text-5xl font-extrabold text-gray-900">$12</span>
                 <span className="text-gray-500">/mo</span>
               </p>
               <Link
@@ -681,7 +681,7 @@ export default function LandingPage() {
               <h3 className="text-2xl font-bold text-gray-900 mb-1">Pro+</h3>
               <p className="text-gray-500 text-sm mb-4">For serious freelance businesses</p>
               <p className="mb-6">
-                <span className="text-5xl font-extrabold text-gray-900">$39</span>
+                <span className="text-5xl font-extrabold text-gray-900">$19</span>
                 <span className="text-gray-500">/mo</span>
               </p>
               <Link
@@ -721,10 +721,10 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <p className="text-blue-600 font-semibold mb-3 uppercase tracking-wide text-sm">
-              Why FlowDesk
+              Why ScopePad
             </p>
             <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-              FlowDesk vs. the competition
+              ScopePad vs. the competition
             </h2>
             <p className="text-xl text-gray-600">See why freelancers are switching.</p>
           </div>
@@ -735,7 +735,7 @@ export default function LandingPage() {
                 <tr className="bg-gray-50">
                   <th className="px-6 py-4 text-left font-semibold text-gray-900">Feature</th>
                   <th className="px-6 py-4 text-center font-bold text-blue-600 bg-blue-50">
-                    FlowDesk
+                    ScopePad
                   </th>
                   <th className="px-6 py-4 text-center font-semibold text-gray-500">HoneyBook</th>
                   <th className="px-6 py-4 text-center font-semibold text-gray-500">Dubsado</th>
@@ -755,18 +755,18 @@ export default function LandingPage() {
                     <td className="px-6 py-4 font-semibold text-gray-900">{row.feature}</td>
                     {['fd', 'hb', 'du', 'bo'].map((key) => {
                       const val = row[key as keyof typeof row];
-                      const isFlowDesk = key === 'fd';
+                      const isScopePad = key === 'fd';
                       return (
                         <td
                           key={key}
-                          className={`px-6 py-4 text-center ${isFlowDesk ? 'bg-blue-50/60 font-bold text-blue-600' : 'text-gray-600'}`}
+                          className={`px-6 py-4 text-center ${isScopePad ? 'bg-blue-50/60 font-bold text-blue-600' : 'text-gray-600'}`}
                         >
                           {val === true ? (
-                            <Check className={`w-6 h-6 mx-auto ${isFlowDesk ? 'text-blue-600' : 'text-green-500'}`} />
+                            <Check className={`w-6 h-6 mx-auto ${isScopePad ? 'text-blue-600' : 'text-green-500'}`} />
                           ) : val === false ? (
                             <span className="text-gray-300">—</span>
                           ) : (
-                            <span className={isFlowDesk ? 'text-blue-600' : ''}>{val as string}</span>
+                            <span className={isScopePad ? 'text-blue-600' : ''}>{val as string}</span>
                           )}
                         </td>
                       );
@@ -780,7 +780,7 @@ export default function LandingPage() {
           <div className="mt-8 p-5 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-3">
             <TrendingUp className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
             <p className="text-gray-700 text-sm">
-              <strong>Note:</strong> HoneyBook raised their pricing by 89 % in 2024. We&apos;re committed to keeping FlowDesk affordable for freelancers.
+              <strong>Note:</strong> HoneyBook raised their pricing by 89 % in 2024. We&apos;re committed to keeping ScopePad affordable for freelancers.
             </p>
           </div>
         </div>
@@ -797,7 +797,7 @@ export default function LandingPage() {
               Generate a proposal in 90 seconds
             </h2>
             <p className="text-xl text-gray-600 mt-4">
-              No signup required. See how FlowDesk turns brief notes into professional proposals.
+              No signup required. See how ScopePad turns brief notes into professional proposals.
             </p>
           </div>
 
@@ -945,8 +945,8 @@ export default function LandingPage() {
               answer="Absolutely. No contracts, no cancellation fees. You can downgrade to the free plan at any time and keep all your data."
             />
             <FAQItem
-              question="How is FlowDesk different from HoneyBook or Bonsai?"
-              answer="FlowDesk is built specifically for speed: AI proposals in 90 seconds, 5-minute setup, and a streamlined client portal. We also offer a genuinely free tier — most competitors start at $15–20/month."
+              question="How is ScopePad different from HoneyBook or Bonsai?"
+              answer="ScopePad is built specifically for speed: AI proposals in 90 seconds, 5-minute setup, and a streamlined client portal. We also offer a genuinely free tier — most competitors start at $15–20/month."
             />
           </div>
         </div>
@@ -965,7 +965,7 @@ export default function LandingPage() {
             Start closing clients.
           </h2>
           <p className="text-xl text-blue-100 mb-10 max-w-xl mx-auto">
-            Join 2,000+ freelancers saving 5+ hours a week with FlowDesk. Set up in minutes, free forever.
+            Join 2,000+ freelancers saving 5+ hours a week with ScopePad. Set up in minutes, free forever.
           </p>
 
           <form
@@ -1005,7 +1005,7 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
             <div className="col-span-2 md:col-span-1">
-              <h3 className="text-white font-bold text-lg mb-3">FlowDesk</h3>
+              <h3 className="text-white font-bold text-lg mb-3">ScopePad</h3>
               <p className="text-sm leading-relaxed">
                 AI-powered proposals and client portal for freelancers who value their time.
               </p>
@@ -1046,7 +1046,7 @@ export default function LandingPage() {
             </div>
           </div>
           <div className="border-t border-gray-800 pt-8">
-            <p className="text-sm text-center">&copy; 2026 FlowDesk. All rights reserved.</p>
+            <p className="text-sm text-center">&copy; 2026 ScopePad. All rights reserved.</p>
           </div>
         </div>
       </footer>

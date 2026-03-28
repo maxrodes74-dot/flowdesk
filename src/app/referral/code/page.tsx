@@ -114,7 +114,7 @@ export default function ReferralPage({
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-4xl mx-auto px-4 py-4">
           <Link href="/" className="text-2xl font-bold text-blue-600">
-            FlowDesk
+            ScopePad
           </Link>
         </div>
       </div>
@@ -252,7 +252,7 @@ export default function ReferralPage({
               {
                 step: 1,
                 title: "Sign Up",
-                description: "Create your FlowDesk account with the referral code",
+                description: "Create your ScopePad account with the referral code",
               },
               {
                 step: 2,
