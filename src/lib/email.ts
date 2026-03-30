@@ -27,7 +27,7 @@ async function sendEmail(params: EmailParams): Promise<boolean> {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "FlowDesk <onboarding@resend.dev>",
+        from: "ScopePad <onboarding@resend.dev>",
         to: params.to,
         subject: params.subject,
         html: params.html,
@@ -43,7 +43,8 @@ async function sendEmail(params: EmailParams): Promise<boolean> {
 
 interface EmailTemplate {
   subject: string;
-  getHtml(data: Record<string, unknown>): string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  getHtml(data: any): string;
 }
 
 function getEmailTemplate(name: string, freelancer: Freelancer): EmailTemplate {
@@ -199,7 +200,7 @@ function getEmailTemplate(name: string, freelancer: Freelancer): EmailTemplate {
 
   return (
     templates[name] || {
-      subject: "Message from FlowDesk",
+      subject: "Message from ScopePad",
       getHtml: () => "<p>No template found</p>",
     }
   );
@@ -396,6 +397,102 @@ export async function sendInvoiceEmail(
   return sendEmail({
     to: clientEmail,
     subject: template.subject,
+    html,
+  });
+}
+
+export async function sendWeeklyTimeSummaryEmail(
+  freelancerEmail: string,
+  freelancerName: string,
+  freelancer: Freelancer,
+  weeklyData: {
+    totalHours: number;
+    hoursByClient: Array<{
+      clientName: string;
+      hours: number;
+    }>;
+  }
+): Promise<boolean> {
+  const brandColor = freelancer.brandColor || "#3B82F6";
+
+  const containerStyle = `
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    background: #f9fafb;
+  `;
+
+  const cardStyle = `
+    background: white;
+    border-radius: 8px;
+    padding: 30px;
+    margin: 20px 0;
+    border: 1px solid #e5e7eb;
+  `;
+
+  const baseStyle = `
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+    color: #333;
+    line-height: 1.6;
+  `;
+
+  // Calculate potential revenue
+  const potentialRevenue = (weeklyData.totalHours * freelancer.hourlyRate).toFixed(2);
+
+  // Generate client hours rows
+  const clientRows = weeklyData.hoursByClient
+    .map(
+      (client) => `
+        <tr style="border-bottom: 1px solid #e5e7eb;">
+          <td style="padding: 12px 0; color: #333;">${client.clientName}</td>
+          <td style="padding: 12px 0; text-align: right; color: #333;">${client.hours.toFixed(1)} hrs</td>
+        </tr>
+      `
+    )
+    .join("");
+
+  const html = `
+    <div style="${containerStyle}">
+      <div style="${cardStyle}">
+        <h1 style="color: ${brandColor}; margin-top: 0; margin-bottom: 8px;">Weekly Time Summary</h1>
+        <p style="color: #666; margin-top: 0; font-size: 14px;">Week of ${new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toLocaleDateString()} - ${new Date().toLocaleDateString()}</p>
+
+        <div style="background: ${brandColor}15; border-left: 4px solid ${brandColor}; padding: 16px; border-radius: 4px; margin: 20px 0;">
+          <p style="margin: 0; color: #666; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px;">Total Hours Tracked</p>
+          <p style="margin: 8px 0 0 0; font-size: 28px; font-weight: bold; color: ${brandColor};">${weeklyData.totalHours.toFixed(1)} hours</p>
+        </div>
+
+        <h2 style="color: #333; font-size: 18px; margin: 20px 0 12px 0; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;">Hours by Client</h2>
+        <table style="width: 100%; font-size: 14px;">
+          <tbody>
+            ${clientRows}
+          </tbody>
+        </table>
+
+        <div style="background: #f0fdf4; border-left: 4px solid #16a34a; padding: 16px; border-radius: 4px; margin: 20px 0;">
+          <p style="margin: 0; color: #666; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px;">Potential Revenue</p>
+          <p style="margin: 8px 0 0 0; font-size: 24px; font-weight: bold; color: #16a34a;">$${potentialRevenue}</p>
+          <p style="margin: 8px 0 0 0; font-size: 12px; color: #666;">At $${freelancer.hourlyRate.toFixed(2)}/hour</p>
+        </div>
+
+        <p style="color: #666; font-size: 14px; margin-top: 20px;">
+          Keep track of your time and make sure your clients understand the value you're delivering. If any hours are missing, log them in your ScopePad dashboard.
+        </p>
+
+        <div style="text-align: center; margin-top: 24px;">
+          <a href="${BASE_URL}/dashboard/time-tracking" style="display: inline-block; padding: 12px 24px; background: ${brandColor}; color: white; text-decoration: none; border-radius: 6px; font-weight: 600;">View Full Report</a>
+        </div>
+
+        <p style="color: #999; font-size: 12px; margin-top: 20px; border-top: 1px solid #e5e7eb; padding-top: 16px;">
+          This is an automated weekly summary. Keep billing your time to stay organized and get paid fairly.
+        </p>
+      </div>
+    </div>
+  `;
+
+  return sendEmail({
+    to: freelancerEmail,
+    subject: `Weekly Time Summary: ${weeklyData.totalHours.toFixed(1)} hours tracked`,
     html,
   });
 }

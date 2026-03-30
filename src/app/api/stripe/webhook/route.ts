@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import crypto from "crypto";
+import { trackServerEvent } from "@/lib/analytics";
 
 // Verify Stripe webhook signature
 function verifyStripeSignature(
@@ -105,6 +106,25 @@ export async function POST(request: Request) {
             );
           }
 
+          // Track payment completion event
+          const { data: invoice } = await supabase
+            .from("invoices")
+            .select("total")
+            .eq("id", invoiceId)
+            .single();
+
+          if (invoice) {
+            await trackServerEvent(
+              (session as Record<string, unknown>).customer as string || "unknown",
+              "payment_completed",
+              {
+                invoiceId,
+                amount: invoice.total,
+                stripeSessionId: session.id,
+              }
+            );
+          }
+
           console.log(`Invoice ${invoiceId} marked as paid via Stripe`);
         }
         break;
@@ -138,43 +158,111 @@ export async function POST(request: Request) {
         break;
       }
 
-      // ---- Subscription events (MTR-286) ----
-      case "customer.subscription.created":
-      case "customer.subscription.updated": {
-        const subscription = event.data.object;
-        const userId = subscription.metadata?.user_id;
+      case "customer.subscription.created": {
+        const subscription = event.data.object as {
+          id: string;
+          customer: string;
+          metadata?: Record<string, string>;
+        };
+        const freelancerId = subscription.metadata?.freelancer_id;
         const tier = subscription.metadata?.tier;
-        const status = subscription.status;
 
-        if (userId && tier && (status === "active" || status === "trialing")) {
-          await supabase
-            .from("freelancers")
-            .update({ subscription_tier: tier })
-            .eq("id", userId);
-          console.log(`User ${userId} subscription updated to ${tier} (${status})`);
+        if (freelancerId && tier && ["pro", "pro+"].includes(tier)) {
+          // NOTE: Requires database migration to add subscription_tier and stripe_subscription_id columns to freelancers table
+          const updateData: Record<string, string> = {};
+
+          // Try to update subscription_tier (will fail gracefully if column doesn't exist)
+          try {
+            const { error } = await supabase
+              .from("freelancers")
+              .update({
+                subscription_tier: tier === "pro+" ? "pro_plus" : tier,
+                stripe_subscription_id: subscription.id,
+              } as Record<string, unknown>)
+              .eq("id", freelancerId);
+
+            if (error) {
+              console.error("Failed to update freelancer tier:", error);
+            } else {
+              console.log(
+                `Freelancer ${freelancerId} subscribed to ${tier} tier`
+              );
+            }
+          } catch (e) {
+            console.error("Subscription columns may not exist yet:", e);
+          }
+        }
+        break;
+      }
+
+      case "customer.subscription.updated": {
+        const subscription = event.data.object as {
+          id: string;
+          customer: string;
+          status: string;
+          metadata?: Record<string, string>;
+        };
+        const freelancerId = subscription.metadata?.freelancer_id;
+        const tier = subscription.metadata?.tier;
+
+        if (freelancerId && tier && ["pro", "pro+"].includes(tier)) {
+          // If subscription is active, update tier
+          if (subscription.status === "active") {
+            try {
+              const { error } = await supabase
+                .from("freelancers")
+                .update({
+                  subscription_tier: tier === "pro+" ? "pro_plus" : tier,
+                  stripe_subscription_id: subscription.id,
+                } as Record<string, unknown>)
+                .eq("id", freelancerId);
+
+              if (error) {
+                console.error("Failed to update freelancer tier:", error);
+              } else {
+                console.log(
+                  `Freelancer ${freelancerId} tier updated to ${tier}`
+                );
+              }
+            } catch (e) {
+              console.error("Subscription columns may not exist yet:", e);
+            }
+          }
         }
         break;
       }
 
       case "customer.subscription.deleted": {
-        const subscription = event.data.object;
-        const userId = subscription.metadata?.user_id;
+        const subscription = event.data.object as {
+          id: string;
+          customer: string;
+          metadata?: Record<string, string>;
+        };
+        const freelancerId = subscription.metadata?.freelancer_id;
 
-        if (userId) {
-          await supabase
-            .from("freelancers")
-            .update({ subscription_tier: "free" })
-            .eq("id", userId);
-          console.log(`User ${userId} subscription cancelled, reverted to free`);
+        if (freelancerId) {
+          try {
+            const { error } = await supabase
+              .from("freelancers")
+              .update({
+                subscription_tier: "free",
+              } as Record<string, unknown>)
+              .eq("id", freelancerId);
+
+            if (error) {
+              console.error(
+                "Failed to downgrade freelancer to free tier:",
+                error
+              );
+            } else {
+              console.log(
+                `Freelancer ${freelancerId} downgraded to free tier`
+              );
+            }
+          } catch (e) {
+            console.error("Subscription columns may not exist yet:", e);
+          }
         }
-        break;
-      }
-
-      case "invoice.payment_failed": {
-        const stripeInvoice = event.data.object;
-        const subId = stripeInvoice.subscription;
-        console.error(`Payment failed for subscription ${subId}`);
-        // Could send email notification here via Resend
         break;
       }
 

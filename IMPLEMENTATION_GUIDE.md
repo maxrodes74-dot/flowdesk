@@ -1,4 +1,4 @@
-# FlowDesk Phase 1 PRD Implementation Guide
+# ScopePad Phase 1 PRD Implementation Guide
 
 This document provides implementation details for the Phase 1 PRD features. All code has been created and is ready to be integrated into your application.
 
@@ -326,4 +326,4 @@ src/
 │   └── supabase/data.ts              [UPDATED]
 ```
 
-All implementations follow existing FlowDesk patterns and conventions.
+All implementations follow existing ScopePad patterns and conventions.

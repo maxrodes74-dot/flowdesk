@@ -4,7 +4,7 @@
 
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { rowToFreelancer, rowToClient } from "@/lib/supabase/data";
+import { rowToFreelancer, rowToClient, rowToProposal } from "@/lib/supabase/data";
 import {
   findInactiveClients,
   generateReEngagementMessage,
@@ -102,22 +102,7 @@ export async function POST(request: Request) {
     // Find inactive clients
     const inactiveClients = findInactiveClients(
       clientRows.map((row) => rowToClient(row)),
-      proposalRows.map((row, idx) => ({
-        id: row.id,
-        freelancerId: row.freelancer_id,
-        clientId: row.client_id,
-        clientName: clientRows.find((c) => c.id === row.client_id)?.name || "",
-        title: row.title,
-        brief: row.brief,
-        scope: row.scope_json || [],
-        timeline: row.timeline,
-        budget: row.budget,
-        totalPrice: row.total_price,
-        terms: row.terms,
-        status: row.status,
-        aiGenerated: row.ai_generated,
-        createdAt: row.created_at,
-      })) as any,
+      proposalRows.map((row) => rowToProposal(row, clientRows.find((c) => c.id === row.client_id)?.name || "")),
       config.inactivityThresholdDays
     );
 
@@ -168,23 +153,67 @@ export async function POST(request: Request) {
   }
 }
 
-// GET endpoint to test the automation
+// GET endpoint: Called by Vercel cron scheduler (requires CRON_SECRET)
+// Also supports testing with freelancerId query parameter
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const freelancerId = searchParams.get("freelancerId");
+  const cronSecret = request.headers.get("authorization");
+  const expectedSecret = `Bearer ${process.env.CRON_SECRET}`;
 
-  if (!freelancerId) {
+  // If CRON_SECRET is set, verify it
+  if (process.env.CRON_SECRET && cronSecret !== expectedSecret) {
     return NextResponse.json(
-      { error: "freelancerId query parameter required" },
-      { status: 400 }
+      { error: "Unauthorized" },
+      { status: 401 }
     );
   }
 
-  // Call POST endpoint
-  return POST(
-    new Request(request.url, {
-      method: "POST",
-      body: JSON.stringify({ freelancerId }),
-    })
-  );
+  try {
+    const supabase = await createClient();
+
+    // Get all freelancers with re-engagement automation enabled
+    const { data: automationRows, error: automationError } = await supabase
+      .from("automations")
+      .select("freelancer_id")
+      .eq("type", "re_engagement_ping")
+      .eq("enabled", true);
+
+    if (automationError || !automationRows) {
+      return NextResponse.json(
+        { error: "Failed to fetch automations" },
+        { status: 500 }
+      );
+    }
+
+    // Run automation for each freelancer
+    const results = [];
+    for (const automation of automationRows) {
+      // Reuse POST logic by creating a synthetic request
+      const response = await POST(
+        new Request(request.url, {
+          method: "POST",
+          body: JSON.stringify({ freelancerId: automation.freelancer_id }),
+        })
+      );
+
+      const data = await response.json();
+      results.push({
+        freelancerId: automation.freelancer_id,
+        status: response.status,
+        data,
+      });
+    }
+
+    return NextResponse.json({
+      success: true,
+      automationsRun: results.length,
+      results,
+    });
+  } catch (error) {
+    console.error("Re-engagement cron execution error:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
 }

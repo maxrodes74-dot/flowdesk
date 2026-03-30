@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { canGenerateProposal } from "@/lib/tier-limits";
+import { trackServerEvent } from "@/lib/analytics";
 
 // Validate the shape of an AI-generated proposal
 function validateProposalShape(data: unknown): data is {
@@ -105,8 +106,8 @@ export async function POST(request: Request) {
   // Check tier limits for AI generation
   if (
     !canGenerateProposal(
-      (subscriptionTier as any) || "free",
-      (aiGenerationsUsedThisMonth as number) || 0
+      subscriptionTier as import("@/lib/types").SubscriptionTier,
+      aiGenerationsUsedThisMonth as number
     )
   ) {
     return NextResponse.json(
@@ -122,7 +123,7 @@ export async function POST(request: Request) {
 
   // If no API key configured, fall back to template generation
   if (!apiKey) {
-    return NextResponse.json(generateTemplate(clientName, brief, timeline, budget));
+    return NextResponse.json(generateTemplate(String(clientName), String(brief), String(timeline || ""), String(budget || "")));
   }
 
   try {
@@ -217,10 +218,36 @@ Today's date is ${new Date().toISOString().split("T")[0]}. Set milestone due dat
       throw new Error("AI response JSON does not match expected proposal schema");
     }
 
+    // Track proposal generation event
+    await trackServerEvent(
+      freelancerName as string,
+      "proposal_generated",
+      {
+        clientName,
+        proposalTitle: proposal.title,
+        totalPrice: proposal.totalPrice,
+        aiGenerated: true,
+      }
+    );
+
     return NextResponse.json(proposal);
   } catch (error) {
     console.error("AI generation failed, falling back to template:", error);
-    return NextResponse.json(generateTemplate(clientName, brief, timeline, budget));
+    const template = generateTemplate(String(clientName), String(brief), String(timeline || ""), String(budget || ""));
+
+    // Track fallback template generation
+    await trackServerEvent(
+      freelancerName as string,
+      "proposal_generated",
+      {
+        clientName,
+        proposalTitle: template.title,
+        totalPrice: template.totalPrice,
+        aiGenerated: false,
+      }
+    );
+
+    return NextResponse.json(template);
   }
 }
 

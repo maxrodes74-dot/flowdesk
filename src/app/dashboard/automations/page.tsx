@@ -70,7 +70,8 @@ export default function AutomationsPage() {
         const newConfigs = { ...DEFAULT_CONFIGS };
         for (const automation of automations) {
           const type = automation.type as keyof AutomationState;
-          newConfigs[type] = { ...DEFAULT_CONFIGS[type], ...(automation.config as any || {}) };
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (newConfigs as any)[type] = { ...DEFAULT_CONFIGS[type], ...(automation.config as object || {}) };
         }
         setConfigs(newConfigs);
       }
@@ -95,16 +96,18 @@ export default function AutomationsPage() {
 
       if (existing) {
         // Update
-        await (supabase
-          .from("automations") as any)
-          .update({ config: config as unknown as Record<string, unknown> })
+        await supabase
+          .from("automations")
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          .update({ config: config as any })
           .eq("id", existing.id);
       } else {
         // Insert
-        await (supabase.from("automations") as any).insert({
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await supabase.from("automations").insert({
           freelancer_id: state.freelancer.id,
           type,
-          config: config as unknown as Record<string, unknown>,
+          config: config as any,
           enabled: (config as any).enabled || false,
         });
       }

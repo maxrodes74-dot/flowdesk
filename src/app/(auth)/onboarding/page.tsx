@@ -491,7 +491,7 @@ export default function OnboardingPage() {
                   disabled={loading}
                   className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-400 text-white font-medium py-2.5 rounded-lg transition flex items-center justify-center gap-2"
                 >
-                  {loading ? "Launching..." : "Launch Your FlowDesk"}
+                  {loading ? "Launching..." : "Launch Your ScopePad"}
                   {!loading && <ArrowRight className="w-4 h-4" />}
                 </button>
               </div>

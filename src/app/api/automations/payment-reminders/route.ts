@@ -167,23 +167,67 @@ export async function POST(request: Request) {
   }
 }
 
-// Optional: GET endpoint to test the automation
+// GET endpoint: Called by Vercel cron scheduler (requires CRON_SECRET)
+// Also supports testing with freelancerId query parameter
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const freelancerId = searchParams.get("freelancerId");
+  const cronSecret = request.headers.get("authorization");
+  const expectedSecret = `Bearer ${process.env.CRON_SECRET}`;
 
-  if (!freelancerId) {
+  // If CRON_SECRET is set, verify it
+  if (process.env.CRON_SECRET && cronSecret !== expectedSecret) {
     return NextResponse.json(
-      { error: "freelancerId query parameter required" },
-      { status: 400 }
+      { error: "Unauthorized" },
+      { status: 401 }
     );
   }
 
-  // Call POST endpoint with test data
-  return POST(
-    new Request(request.url, {
-      method: "POST",
-      body: JSON.stringify({ freelancerId }),
-    })
-  );
+  try {
+    const supabase = await createClient();
+
+    // Get all freelancers with payment reminders automation enabled
+    const { data: automationRows, error: automationError } = await supabase
+      .from("automations")
+      .select("freelancer_id")
+      .eq("type", "payment_reminders")
+      .eq("enabled", true);
+
+    if (automationError || !automationRows) {
+      return NextResponse.json(
+        { error: "Failed to fetch automations" },
+        { status: 500 }
+      );
+    }
+
+    // Run automation for each freelancer
+    const results = [];
+    for (const automation of automationRows) {
+      // Reuse POST logic by creating a synthetic request
+      const response = await POST(
+        new Request(request.url, {
+          method: "POST",
+          body: JSON.stringify({ freelancerId: automation.freelancer_id }),
+        })
+      );
+
+      const data = await response.json();
+      results.push({
+        freelancerId: automation.freelancer_id,
+        status: response.status,
+        data,
+      });
+    }
+
+    return NextResponse.json({
+      success: true,
+      automationsRun: results.length,
+      results,
+    });
+  } catch (error) {
+    console.error("Payment reminder cron execution error:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
 }

@@ -13,8 +13,8 @@ export const mockFreelancer: Freelancer = {
   logoUrl: null,
   portfolioUrl: "https://alexrivera.dev",
   stripeAccountId: null,
-  subscriptionTier: 'free' as const,
-  aiGenerationsUsedThisMonth: 0,
+  subscriptionTier: "pro" as const,
+  aiGenerationsUsedThisMonth: 3,
   createdAt: "2026-03-01T00:00:00Z",
 };
 

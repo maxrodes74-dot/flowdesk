@@ -79,7 +79,7 @@ export default function LoginPage() {
       <div className="text-center">
         <h1 className="text-2xl font-bold text-slate-900">Welcome back</h1>
         <p className="text-slate-600 text-sm mt-1">
-          Sign in to your FlowDesk account
+          Sign in to your ScopePad account
         </p>
       </div>
 

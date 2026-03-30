@@ -1,10 +1,10 @@
-# FlowDesk Phase 3: Automation Features
+# ScopePad Phase 3: Automation Features
 
-This document describes the complete Phase 3 automation implementation for FlowDesk.
+This document describes the complete Phase 3 automation implementation for ScopePad.
 
 ## Overview
 
-FlowDesk now includes four powerful automation features designed to help freelancers save time and grow their business:
+ScopePad now includes four powerful automation features designed to help freelancers save time and grow their business:
 
 1. **Payment Reminders** - Escalating reminders for overdue invoices
 2. **Scope Creep Detection** - AI-powered alerts when clients request out-of-scope work

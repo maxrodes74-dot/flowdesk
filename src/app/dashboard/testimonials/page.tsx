@@ -1,77 +1,103 @@
 "use client";
 
-import React, { useState } from "react";
-import { Star, Copy, Download, Mail, Settings } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Star, Copy, Download, Mail, Settings, Loader } from "lucide-react";
 import { useApp } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
+interface Testimonial {
+  id: string;
+  clientName: string;
+  rating: number;
+  text: string;
+  permission_to_use: boolean;
+  created_at: string;
+}
+
 export default function TestimonialsPage() {
-  const { state, dispatch } = useApp();
+  const { state } = useApp();
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
+  const [loading, setLoading] = useState(true);
   const [showRequestForm, setShowRequestForm] = useState(false);
   const [showWidgetCode, setShowWidgetCode] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [isSubmittingRequest, setIsSubmittingRequest] = useState(false);
+  const [requestError, setRequestError] = useState("");
+  const [requestSuccess, setRequestSuccess] = useState("");
   const [formData, setFormData] = useState({
     clientEmail: "",
+    clientName: "",
   });
 
-  const mockTestimonials = [
-    {
-      id: "t1",
-      clientName: "Sarah Johnson",
-      rating: 5,
-      text: "Excellent service! The deliverables exceeded our expectations and the communication was seamless.",
-      permissionToPublish: true,
-      createdAt: "2024-03-15",
-    },
-    {
-      id: "t2",
-      clientName: "Michael Chen",
-      rating: 5,
-      text: "Professional, reliable, and delivers on time. Highly recommended for any serious projects.",
-      permissionToPublish: true,
-      createdAt: "2024-03-10",
-    },
-    {
-      id: "t3",
-      clientName: "Emma Davis",
-      rating: 4,
-      text: "Great work overall. Very responsive to feedback and willing to iterate.",
-      permissionToPublish: true,
-      createdAt: "2024-03-05",
-    },
-  ];
+  useEffect(() => {
+    const fetchTestimonials = async () => {
+      try {
+        const response = await fetch(
+          `/api/testimonials?freelancerId=${state.freelancer?.id}`
+        );
+        if (response.ok) {
+          const data = await response.json();
+          setTestimonials(data.testimonials || []);
+        }
+      } catch (error) {
+        console.error("Failed to fetch testimonials:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (state.freelancer?.id) {
+      fetchTestimonials();
+    }
+  }, [state.freelancer?.id]);
 
   const averageRating =
-    mockTestimonials.length > 0
+    testimonials.length > 0
       ? (
-          mockTestimonials.reduce((sum, t) => sum + t.rating, 0) /
-          mockTestimonials.length
+          testimonials.reduce((sum, t) => sum + t.rating, 0) /
+          testimonials.length
         ).toFixed(1)
       : 0;
 
-  const publishedCount = mockTestimonials.filter(
-    (t) => t.permissionToPublish
+  const publishedCount = testimonials.filter(
+    (t) => t.permission_to_use
   ).length;
 
-  const widgetCode = `<!-- FlowDesk Testimonials Widget -->
-<div id="flowdesk-testimonials"></div>
-<script src="https://flowdesk.io/widget/testimonials.js"></script>
-<script>
-  FlowDesk.loadTestimonials({
-    freelancerId: "${state.freelancer?.id}",
-    maxCount: 3,
-    theme: "light"
-  });
-</script>`;
+  const appUrl = typeof window !== 'undefined' ? window.location.origin : 'https://scopepad.io';
+  const widgetCode = `<!-- ScopePad Testimonials Widget -->
+<div id="scopepad-testimonials"></div>
+<script src="${appUrl}/api/testimonials/widget?id=${state.freelancer?.id}"></script>`;
 
-  const handleRequestTestimonial = (e: React.FormEvent) => {
+  const handleRequestTestimonial = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (formData.clientEmail) {
-      alert(
+    if (!formData.clientEmail || !formData.clientName) {
+      setRequestError("Please fill in all fields");
+      return;
+    }
+
+    setIsSubmittingRequest(true);
+    setRequestError("");
+    setRequestSuccess("");
+
+    try {
+      // Generate unique token
+      const token = `token_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      const testimonialUrl = `${window.location.origin}/testimonial/${token}`;
+
+      // In production, send email with the link
+      // For now, just show success message
+      setRequestSuccess(
         `Testimonial request sent to ${formData.clientEmail}. They'll receive a link to submit their feedback.`
       );
-      setFormData({ clientEmail: "" });
-      setShowRequestForm(false);
+      setFormData({ clientEmail: "", clientName: "" });
+      setTimeout(() => {
+        setShowRequestForm(false);
+        setRequestSuccess("");
+      }, 2000);
+    } catch (error) {
+      setRequestError("Failed to send testimonial request");
+    } finally {
+      setIsSubmittingRequest(false);
     }
   };
 
@@ -83,7 +109,7 @@ export default function TestimonialsPage() {
 
   const exportAsJSON = () => {
     const data = JSON.stringify(
-      mockTestimonials.filter((t) => t.permissionToPublish),
+      testimonials.filter((t) => t.permission_to_use),
       null,
       2
     );
@@ -114,11 +140,21 @@ export default function TestimonialsPage() {
     );
   };
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader className="animate-spin text-blue-600" size={40} />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8">
       <div>
         <h1 className="text-3xl font-bold text-gray-900">Testimonials</h1>
-        <p className="text-gray-600 mt-1">Collect and showcase client testimonials</p>
+        <p className="text-gray-600 mt-1">
+          Collect and showcase client testimonials
+        </p>
       </div>
 
       {/* Summary Cards */}
@@ -126,19 +162,23 @@ export default function TestimonialsPage() {
         <div className="bg-white rounded-lg border border-gray-200 p-6">
           <p className="text-sm font-medium text-gray-600">Total Testimonials</p>
           <p className="text-3xl font-bold text-gray-900 mt-2">
-            {mockTestimonials.length}
+            {testimonials.length}
           </p>
         </div>
         <div className="bg-white rounded-lg border border-gray-200 p-6">
           <p className="text-sm font-medium text-gray-600">Average Rating</p>
           <div className="mt-2">
             <p className="text-3xl font-bold text-gray-900">{averageRating}</p>
-            <div className="mt-1">{renderStars(Math.round(Number(averageRating)))}</div>
+            <div className="mt-1">
+              {renderStars(Math.round(Number(averageRating)))}
+            </div>
           </div>
         </div>
         <div className="bg-white rounded-lg border border-gray-200 p-6">
           <p className="text-sm font-medium text-gray-600">Published</p>
-          <p className="text-3xl font-bold text-gray-900 mt-2">{publishedCount}</p>
+          <p className="text-3xl font-bold text-gray-900 mt-2">
+            {publishedCount}
+          </p>
         </div>
       </div>
 
@@ -176,6 +216,21 @@ export default function TestimonialsPage() {
           <form onSubmit={handleRequestTestimonial} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-900 mb-2">
+                Client Name
+              </label>
+              <input
+                type="text"
+                value={formData.clientName}
+                onChange={(e) =>
+                  setFormData({ ...formData, clientName: e.target.value })
+                }
+                placeholder="Client name"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-900 mb-2">
                 Client Email Address
               </label>
               <input
@@ -189,19 +244,40 @@ export default function TestimonialsPage() {
                 required
               />
               <p className="text-xs text-gray-600 mt-2">
-                The client will receive a personalized link to submit their testimonial.
+                The client will receive a personalized link to submit their
+                testimonial.
               </p>
             </div>
+
+            {requestError && (
+              <div className="text-sm text-red-600 bg-red-50 p-3 rounded">
+                {requestError}
+              </div>
+            )}
+
+            {requestSuccess && (
+              <div className="text-sm text-green-600 bg-green-50 p-3 rounded">
+                {requestSuccess}
+              </div>
+            )}
+
             <div className="flex gap-2">
               <button
                 type="submit"
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                disabled={isSubmittingRequest}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               >
-                Send Request
+                {isSubmittingRequest && (
+                  <Loader size={16} className="animate-spin" />
+                )}
+                {isSubmittingRequest ? "Sending..." : "Send Request"}
               </button>
               <button
                 type="button"
-                onClick={() => setShowRequestForm(false)}
+                onClick={() => {
+                  setShowRequestForm(false);
+                  setRequestError("");
+                }}
                 className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-gray-900"
               >
                 Cancel
@@ -218,7 +294,8 @@ export default function TestimonialsPage() {
             Embed Testimonials Widget
           </h2>
           <p className="text-sm text-gray-600 mb-4">
-            Copy this code and paste it into your website to display your testimonials:
+            Copy this code and paste it into your website to display your
+            testimonials:
           </p>
           <div className="bg-gray-900 rounded-lg p-4 mb-4 overflow-x-auto">
             <pre className="text-gray-100 text-xs font-mono whitespace-pre-wrap break-words">
@@ -243,30 +320,32 @@ export default function TestimonialsPage() {
           </h2>
         </div>
         <div className="divide-y divide-gray-200">
-          {mockTestimonials.length > 0 ? (
-            mockTestimonials.map((testimonial) => (
+          {testimonials.length > 0 ? (
+            testimonials.map((testimonial) => (
               <div key={testimonial.id} className="p-6">
                 <div className="flex items-start justify-between mb-3">
                   <div>
                     <p className="font-semibold text-gray-900">
                       {testimonial.clientName}
                     </p>
-                    <div className="mt-1">{renderStars(testimonial.rating)}</div>
+                    <div className="mt-1">
+                      {renderStars(testimonial.rating)}
+                    </div>
                   </div>
                   <span
                     className={cn(
                       "px-3 py-1 rounded-full text-xs font-medium",
-                      testimonial.permissionToPublish
+                      testimonial.permission_to_use
                         ? "bg-green-100 text-green-700"
                         : "bg-gray-100 text-gray-700"
                     )}
                   >
-                    {testimonial.permissionToPublish ? "Published" : "Private"}
+                    {testimonial.permission_to_use ? "Published" : "Private"}
                   </span>
                 </div>
                 <p className="text-gray-700 mb-2">{testimonial.text}</p>
                 <p className="text-xs text-gray-500">
-                  {new Date(testimonial.createdAt).toLocaleDateString()}
+                  {new Date(testimonial.created_at).toLocaleDateString()}
                 </p>
               </div>
             ))

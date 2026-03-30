@@ -6,122 +6,170 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
-const PRICE_MAP: Record<string, Record<string, string>> = {
-  pro: {
-    monthly: "price_1TG3DKEywgG0Hl8k0T66zD6G",
-    annual: "price_1TG4dyEywgG0Hl8kaoMn8lYj",
-  },
-  "pro+": {
-    monthly: "price_1TG3EdEywgG0Hl8kg9o5OYhE",
-    annual: "price_1TG4glEywgG0Hl8kK8RkY7vv",
-  },
-};
-
 export async function POST(request: Request) {
   const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
   if (!stripeSecretKey) {
-    return NextResponse.json({ error: "Stripe is not configured" }, { status: 503 });
+    return NextResponse.json(
+      { error: "Stripe is not configured" },
+      { status: 503 }
+    );
   }
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  let body: Record<string, string>;
   try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
-  }
+    const body = await request.json();
+    const { tier, billingPeriod } = body as {
+      tier: "pro" | "pro_plus";
+      billingPeriod?: "monthly" | "annual";
+    };
 
-  const { tier, interval } = body;
-  if (!tier || !interval) {
-    return NextResponse.json(
-      { error: "Missing required fields: tier (pro | pro+), interval (monthly | annual)" },
-      { status: 400 }
-    );
-  }
-
-  const priceId = PRICE_MAP[tier]?.[interval];
-  if (!priceId) {
-    return NextResponse.json(
-      { error: `Invalid tier/interval: ${tier}/${interval}` },
-      { status: 400 }
-    );
-  }
-
-  // Get or create Stripe customer
-  const { data: freelancer } = await supabase
-    .from("freelancers")
-    .select("stripe_customer_id, email, name")
-    .eq("id", user.id)
-    .single();
-
-  let customerId = freelancer?.stripe_customer_id;
-
-  if (!customerId) {
-    // Create Stripe customer
-    const customerRes = await fetch("https://api.stripe.com/v1/customers", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${stripeSecretKey}`,
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body: new URLSearchParams({
-        email: freelancer?.email || user.email || "",
-        name: freelancer?.name || "",
-        "metadata[user_id]": user.id,
-      }),
-    });
-
-    if (!customerRes.ok) {
-      return NextResponse.json({ error: "Failed to create customer" }, { status: 500 });
+    if (!tier || !["pro", "pro_plus"].includes(tier)) {
+      return NextResponse.json(
+        { error: "Invalid tier. Must be 'pro' or 'pro_plus'" },
+        { status: 400 }
+      );
     }
 
-    const customer = await customerRes.json();
-    customerId = customer.id;
+    const billing = billingPeriod || "monthly";
 
-    // Save customer ID
-    await supabase
+    const supabase = await createClient();
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json(
+        { error: "Not authenticated" },
+        { status: 401 }
+      );
+    }
+
+    const { data: freelancerRow } = await supabase
       .from("freelancers")
-      .update({ stripe_customer_id: customerId })
-      .eq("id", user.id);
+      .select("*")
+      .eq("user_id", user.id)
+      .single();
+
+    if (!freelancerRow) {
+      return NextResponse.json(
+        { error: "Freelancer profile not found" },
+        { status: 404 }
+      );
+    }
+
+    // Get or create Stripe customer
+    let customerId: string;
+    const stripeCustomerId = (freelancerRow as Record<string, unknown>)
+      .stripe_customer_id as string | undefined;
+
+    if (stripeCustomerId) {
+      customerId = stripeCustomerId;
+    } else {
+      // Create new Stripe customer via API
+      const customerRes = await fetch("https://api.stripe.com/v1/customers", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${stripeSecretKey}`,
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: new URLSearchParams({
+          email: user.email || "",
+          name: freelancerRow.name || "",
+          "metadata[freelancer_id]": freelancerRow.id,
+        }),
+      });
+
+      if (!customerRes.ok) {
+        console.error("Failed to create Stripe customer");
+        return NextResponse.json(
+          { error: "Failed to create payment profile" },
+          { status: 500 }
+        );
+      }
+
+      const customer = await customerRes.json();
+      customerId = customer.id;
+
+      // Try to save customer ID back to freelancer record
+      try {
+        await supabase
+          .from("freelancers")
+          .update({ stripe_customer_id: customerId } as Record<string, unknown>)
+          .eq("id", freelancerRow.id);
+      } catch (e) {
+        console.warn("stripe_customer_id column may not exist yet:", e);
+      }
+    }
+
+    // Determine price ID based on tier and billing period
+    let priceId: string | undefined;
+
+    if (tier === "pro") {
+      priceId =
+        billing === "annual"
+          ? process.env.STRIPE_PRO_ANNUAL_PRICE_ID
+          : process.env.STRIPE_PRO_PRICE_ID;
+    } else {
+      priceId =
+        billing === "annual"
+          ? process.env.STRIPE_PRO_PLUS_ANNUAL_PRICE_ID
+          : process.env.STRIPE_PRO_PLUS_PRICE_ID;
+    }
+
+    if (!priceId) {
+      return NextResponse.json(
+        {
+          error: `Price ID not configured for tier: ${tier} (${billing})`,
+        },
+        { status: 500 }
+      );
+    }
+
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+
+    // Create checkout session for subscription
+    const sessionRes = await fetch(
+      "https://api.stripe.com/v1/checkout/sessions",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${stripeSecretKey}`,
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: new URLSearchParams({
+          customer: customerId,
+          mode: "subscription",
+          "payment_method_types[0]": "card",
+          "line_items[0][price]": priceId,
+          "line_items[0][quantity]": "1",
+          success_url: `${appUrl}/dashboard/settings?session_id={CHECKOUT_SESSION_ID}`,
+          cancel_url: `${appUrl}/dashboard/settings`,
+          "metadata[freelancer_id]": freelancerRow.id,
+          "metadata[tier]": tier,
+          "metadata[billing_period]": billing,
+        }),
+      }
+    );
+
+    if (!sessionRes.ok) {
+      const error = await sessionRes.json();
+      console.error("Stripe subscription session error:", error);
+      return NextResponse.json(
+        { error: "Failed to create checkout session" },
+        { status: 500 }
+      );
+    }
+
+    const session = await sessionRes.json();
+    return NextResponse.json({
+      success: true,
+      checkoutUrl: session.url,
+    });
+  } catch (error) {
+    console.error("Subscription checkout error:", error);
+    return NextResponse.json(
+      { error: "Failed to create checkout session" },
+      { status: 500 }
+    );
   }
-
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://scopepad.vercel.app";
-
-  // Create Stripe Checkout Session for subscription
-  const response = await fetch("https://api.stripe.com/v1/checkout/sessions", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${stripeSecretKey}`,
-      "Content-Type": "application/x-www-form-urlencoded",
-    },
-    body: new URLSearchParams({
-      customer: customerId!,
-      "payment_method_types[0]": "card",
-      mode: "subscription",
-      "line_items[0][price]": priceId,
-      "line_items[0][quantity]": "1",
-      success_url: `${appUrl}/dashboard/settings?checkout=success`,
-      cancel_url: `${appUrl}/dashboard/settings?checkout=cancelled`,
-      "subscription_data[trial_period_days]": "14",
-      "subscription_data[metadata][user_id]": user.id,
-      "subscription_data[metadata][tier]": tier,
-      allow_promotion_codes: "true",
-    }),
-  });
-
-  if (!response.ok) {
-    const err = await response.json();
-    console.error("Stripe subscription checkout error:", err);
-    return NextResponse.json({ error: "Failed to create checkout session" }, { status: 500 });
-  }
-
-  const session = await response.json();
-  return NextResponse.json({ url: session.url, sessionId: session.id });
 }
