@@ -15,6 +15,8 @@ const mockFreelancer: Freelancer = {
   logoUrl: null,
   portfolioUrl: null,
   stripeAccountId: null,
+  subscriptionTier: 'free' as const,
+  aiGenerationsUsedThisMonth: 0,
   createdAt: "2026-01-01",
 };
 

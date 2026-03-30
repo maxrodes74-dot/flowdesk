@@ -105,8 +105,8 @@ export async function POST(request: Request) {
   // Check tier limits for AI generation
   if (
     !canGenerateProposal(
-      subscriptionTier as string,
-      aiGenerationsUsedThisMonth as number
+      (subscriptionTier as any) || "free",
+      (aiGenerationsUsedThisMonth as number) || 0
     )
   ) {
     return NextResponse.json(
@@ -225,18 +225,22 @@ Today's date is ${new Date().toISOString().split("T")[0]}. Set milestone due dat
 }
 
 function generateTemplate(
-  clientName: string,
-  brief: string,
-  timeline: string,
-  budget: string
+  clientName: unknown,
+  brief: unknown,
+  timeline: unknown,
+  budget: unknown
 ) {
-  const budgetNum = parseInt(budget.replace(/[^0-9]/g, "")) || 5000;
+  const clientNameStr = String(clientName || "Client");
+  const briefStr = String(brief || "");
+  const timelineStr = String(timeline || "");
+  const budgetStr = String(budget || "");
+  const budgetNum = parseInt(budgetStr.replace(/[^0-9]/g, "")) || 5000;
   const today = Date.now();
 
   return {
-    clientName,
-    title: `Project Proposal: ${brief.split(".")[0].substring(0, 60)}`,
-    brief,
+    clientName: clientNameStr,
+    title: `Project Proposal: ${briefStr.split(".")[0].substring(0, 60)}`,
+    brief: briefStr,
     scope: [
       {
         title: "Discovery & Planning",
@@ -263,8 +267,8 @@ function generateTemplate(
         dueDate: new Date(today + 56 * 86400000).toISOString().split("T")[0],
       },
     ],
-    timeline: timeline || "8 weeks",
-    budget,
+    timeline: timelineStr || "8 weeks",
+    budget: budgetStr,
     totalPrice: budgetNum,
     terms:
       "Payment split across milestones: 30% upfront, 30% at midpoint, 40% on completion. Two rounds of revisions per milestone included. Additional revisions billed at hourly rate. Net 15 payment terms on all invoices.",

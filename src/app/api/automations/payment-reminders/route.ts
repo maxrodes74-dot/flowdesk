@@ -72,7 +72,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const config = automationRow.config as PaymentReminderConfig;
+    const config = automationRow.config as unknown as PaymentReminderConfig;
 
     // Get all invoices for this freelancer
     const { data: invoiceRows, error: invoiceError } = await supabase

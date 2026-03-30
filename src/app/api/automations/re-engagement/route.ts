@@ -28,7 +28,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const { freelancerId } = body as RequestBody;
+    const { freelancerId } = body as unknown as RequestBody;
 
     if (!freelancerId || typeof freelancerId !== "string") {
       return NextResponse.json(
@@ -71,7 +71,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const config = automationRow.config as ReEngagementConfig;
+    const config = automationRow.config as unknown as ReEngagementConfig;
 
     // Get all clients
     const { data: clientRows } = await supabase
@@ -117,7 +117,7 @@ export async function POST(request: Request) {
         status: row.status,
         aiGenerated: row.ai_generated,
         createdAt: row.created_at,
-      })),
+      })) as any,
       config.inactivityThresholdDays
     );
 

@@ -70,7 +70,7 @@ export default function AutomationsPage() {
         const newConfigs = { ...DEFAULT_CONFIGS };
         for (const automation of automations) {
           const type = automation.type as keyof AutomationState;
-          newConfigs[type] = { ...DEFAULT_CONFIGS[type], ...(automation.config || {}) };
+          newConfigs[type] = { ...DEFAULT_CONFIGS[type], ...(automation.config as any || {}) };
         }
         setConfigs(newConfigs);
       }
@@ -95,16 +95,16 @@ export default function AutomationsPage() {
 
       if (existing) {
         // Update
-        await supabase
-          .from("automations")
-          .update({ config })
+        await (supabase
+          .from("automations") as any)
+          .update({ config: config as unknown as Record<string, unknown> })
           .eq("id", existing.id);
       } else {
         // Insert
-        await supabase.from("automations").insert({
+        await (supabase.from("automations") as any).insert({
           freelancer_id: state.freelancer.id,
           type,
-          config,
+          config: config as unknown as Record<string, unknown>,
           enabled: (config as any).enabled || false,
         });
       }

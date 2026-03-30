@@ -66,16 +66,8 @@ export async function POST(request: Request) {
     );
   }
 
-  let event: {
-    type: string;
-    data: {
-      object: {
-        id: string;
-        payment_status?: string;
-        metadata?: Record<string, string>;
-      };
-    };
-  };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let event: { type: string; data: { object: any } };
 
   try {
     event = JSON.parse(body);
@@ -143,6 +135,46 @@ export async function POST(request: Request) {
           console.error(`Payment failed for invoice ${invoiceId}`);
           // Invoice stays in its current status (sent/viewed)
         }
+        break;
+      }
+
+      // ---- Subscription events (MTR-286) ----
+      case "customer.subscription.created":
+      case "customer.subscription.updated": {
+        const subscription = event.data.object;
+        const userId = subscription.metadata?.user_id;
+        const tier = subscription.metadata?.tier;
+        const status = subscription.status;
+
+        if (userId && tier && (status === "active" || status === "trialing")) {
+          await supabase
+            .from("freelancers")
+            .update({ subscription_tier: tier })
+            .eq("id", userId);
+          console.log(`User ${userId} subscription updated to ${tier} (${status})`);
+        }
+        break;
+      }
+
+      case "customer.subscription.deleted": {
+        const subscription = event.data.object;
+        const userId = subscription.metadata?.user_id;
+
+        if (userId) {
+          await supabase
+            .from("freelancers")
+            .update({ subscription_tier: "free" })
+            .eq("id", userId);
+          console.log(`User ${userId} subscription cancelled, reverted to free`);
+        }
+        break;
+      }
+
+      case "invoice.payment_failed": {
+        const stripeInvoice = event.data.object;
+        const subId = stripeInvoice.subscription;
+        console.error(`Payment failed for subscription ${subId}`);
+        // Could send email notification here via Resend
         break;
       }
 

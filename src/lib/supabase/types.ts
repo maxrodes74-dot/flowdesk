@@ -141,6 +141,9 @@ export type Database = {
           stripe_account_id: string | null
           tone: string
           user_id: string
+          subscription_tier: string
+          ai_generations_used_this_month: number
+          stripe_customer_id: string | null
         }
         Insert: {
           brand_color?: string
@@ -157,6 +160,9 @@ export type Database = {
           stripe_account_id?: string | null
           tone?: string
           user_id: string
+          subscription_tier?: string
+          ai_generations_used_this_month?: number
+          stripe_customer_id?: string | null
         }
         Update: {
           brand_color?: string
@@ -173,6 +179,9 @@ export type Database = {
           stripe_account_id?: string | null
           tone?: string
           user_id?: string
+          subscription_tier?: string
+          ai_generations_used_this_month?: number
+          stripe_customer_id?: string | null
         }
         Relationships: []
       }
@@ -433,6 +442,427 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      api_keys: {
+        Row: {
+          id: string
+          freelancer_id: string
+          name: string
+          key_hash: string
+          key_prefix: string
+          permissions: Json
+          last_used_at: string | null
+          request_count: number
+          expires_at: string | null
+          is_active: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          freelancer_id: string
+          name: string
+          key_hash: string
+          key_prefix: string
+          permissions?: Json
+          last_used_at?: string | null
+          request_count?: number
+          expires_at?: string | null
+          is_active?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          freelancer_id?: string
+          name?: string
+          key_hash?: string
+          key_prefix?: string
+          permissions?: Json
+          last_used_at?: string | null
+          request_count?: number
+          expires_at?: string | null
+          is_active?: boolean
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "api_keys_freelancer_id_fkey"
+            columns: ["freelancer_id"]
+            isOneToOne: false
+            referencedRelation: "freelancers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      documents: {
+        Row: {
+          id: string
+          freelancer_id: string
+          client_id: string | null
+          type: string
+          template_id: string | null
+          parent_id: string | null
+          lineage_chain: Json
+          title: string
+          content: Json
+          metadata: Json
+          status: string
+          version: number
+          file_url: string | null
+          file_type: string | null
+          ai_generated: boolean
+          agent_key_id: string | null
+          created_at: string
+          updated_at: string
+          sent_at: string | null
+          approved_at: string | null
+        }
+        Insert: {
+          id?: string
+          freelancer_id: string
+          client_id?: string | null
+          type: string
+          template_id?: string | null
+          parent_id?: string | null
+          lineage_chain?: Json
+          title: string
+          content?: Json
+          metadata?: Json
+          status?: string
+          version?: number
+          file_url?: string | null
+          file_type?: string | null
+          ai_generated?: boolean
+          agent_key_id?: string | null
+          created_at?: string
+          updated_at?: string
+          sent_at?: string | null
+          approved_at?: string | null
+        }
+        Update: {
+          id?: string
+          freelancer_id?: string
+          client_id?: string | null
+          type?: string
+          template_id?: string | null
+          parent_id?: string | null
+          lineage_chain?: Json
+          title?: string
+          content?: Json
+          metadata?: Json
+          status?: string
+          version?: number
+          file_url?: string | null
+          file_type?: string | null
+          ai_generated?: boolean
+          agent_key_id?: string | null
+          created_at?: string
+          updated_at?: string
+          sent_at?: string | null
+          approved_at?: string | null
+        }
+        Relationships: []
+      }
+      document_versions: {
+        Row: {
+          id: string
+          document_id: string
+          version: number
+          content: Json
+          metadata: Json
+          file_url: string | null
+          created_by: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          document_id: string
+          version: number
+          content?: Json
+          metadata?: Json
+          file_url?: string | null
+          created_by: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          document_id?: string
+          version?: number
+          content?: Json
+          metadata?: Json
+          file_url?: string | null
+          created_by?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
+      webhooks: {
+        Row: {
+          id: string
+          freelancer_id: string
+          url: string
+          secret: string
+          events: Json
+          is_active: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          freelancer_id: string
+          url: string
+          secret: string
+          events?: Json
+          is_active?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          freelancer_id?: string
+          url?: string
+          secret?: string
+          events?: Json
+          is_active?: boolean
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "webhooks_freelancer_id_fkey"
+            columns: ["freelancer_id"]
+            isOneToOne: false
+            referencedRelation: "freelancers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      webhook_deliveries: {
+        Row: {
+          id: string
+          webhook_id: string
+          event: string
+          payload: Json
+          status_code: number | null
+          response_body: string | null
+          attempt: number
+          success: boolean
+          delivered_at: string
+        }
+        Insert: {
+          id?: string
+          webhook_id: string
+          event: string
+          payload?: Json
+          status_code?: number | null
+          response_body?: string | null
+          attempt?: number
+          success?: boolean
+          delivered_at?: string
+        }
+        Update: {
+          id?: string
+          webhook_id?: string
+          event?: string
+          payload?: Json
+          status_code?: number | null
+          response_body?: string | null
+          attempt?: number
+          success?: boolean
+          delivered_at?: string
+        }
+        Relationships: []
+      }
+      templates: {
+        Row: {
+          id: string
+          type: string
+          name: string
+          description: string
+          category: string
+          sections: Json
+          metadata_schema: Json
+          default_file_type: string
+          styling: Json
+          is_system: boolean
+          freelancer_id: string | null
+          tier_required: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          type: string
+          name: string
+          description?: string
+          category?: string
+          sections?: Json
+          metadata_schema?: Json
+          default_file_type?: string
+          styling?: Json
+          is_system?: boolean
+          freelancer_id?: string | null
+          tier_required?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          type?: string
+          name?: string
+          description?: string
+          category?: string
+          sections?: Json
+          metadata_schema?: Json
+          default_file_type?: string
+          styling?: Json
+          is_system?: boolean
+          freelancer_id?: string | null
+          tier_required?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      pending_approvals: {
+        Row: {
+          id: string
+          freelancer_id: string
+          api_key_id: string
+          api_key_name: string
+          action_category: string
+          action_description: string
+          action_payload: Json
+          status: string
+          created_at: string
+          resolved_at: string | null
+        }
+        Insert: {
+          id?: string
+          freelancer_id: string
+          api_key_id: string
+          api_key_name: string
+          action_category: string
+          action_description?: string
+          action_payload?: Json
+          status?: string
+          created_at?: string
+          resolved_at?: string | null
+        }
+        Update: {
+          id?: string
+          freelancer_id?: string
+          api_key_id?: string
+          api_key_name?: string
+          action_category?: string
+          action_description?: string
+          action_payload?: Json
+          status?: string
+          created_at?: string
+          resolved_at?: string | null
+        }
+        Relationships: []
+      }
+      audit_log: {
+        Row: {
+          id: string
+          freelancer_id: string
+          api_key_id: string
+          action_category: string
+          action: string
+          resource_type: string
+          resource_id: string
+          result: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          freelancer_id: string
+          api_key_id: string
+          action_category: string
+          action: string
+          resource_type: string
+          resource_id: string
+          result?: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          freelancer_id?: string
+          api_key_id?: string
+          action_category?: string
+          action?: string
+          resource_type?: string
+          resource_id?: string
+          result?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
+      document_comments: {
+        Row: {
+          id: string
+          document_id: string
+          section_key: string | null
+          author_type: string
+          author_name: string
+          body: string
+          parent_comment_id: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          document_id: string
+          section_key?: string | null
+          author_type: string
+          author_name: string
+          body: string
+          parent_comment_id?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          document_id?: string
+          section_key?: string | null
+          author_type?: string
+          author_name?: string
+          body?: string
+          parent_comment_id?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      }
+      change_requests: {
+        Row: {
+          id: string
+          document_id: string
+          client_name: string
+          description: string
+          sections_affected: Json
+          status: string
+          change_order_id: string | null
+          created_at: string
+          resolved_at: string | null
+        }
+        Insert: {
+          id?: string
+          document_id: string
+          client_name: string
+          description?: string
+          sections_affected?: Json
+          status?: string
+          change_order_id?: string | null
+          created_at?: string
+          resolved_at?: string | null
+        }
+        Update: {
+          id?: string
+          document_id?: string
+          client_name?: string
+          description?: string
+          sections_affected?: Json
+          status?: string
+          change_order_id?: string | null
+          created_at?: string
+          resolved_at?: string | null
+        }
+        Relationships: []
       }
     }
     Views: {

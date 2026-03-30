@@ -34,7 +34,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const proposal = body as ProposalData;
+  const proposal = body as unknown as ProposalData;
 
   // Validate required fields
   if (!proposal.title || !proposal.clientName || !proposal.scope) {

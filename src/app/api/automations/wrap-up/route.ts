@@ -30,7 +30,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const { freelancerId, proposalId } = body as RequestBody;
+    const { freelancerId, proposalId } = body as unknown as RequestBody;
 
     if (!freelancerId || !proposalId) {
       return NextResponse.json(
@@ -72,7 +72,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const config = automationRow.config as ProjectWrapUpConfig;
+    const config = automationRow.config as unknown as ProjectWrapUpConfig;
 
     // Get proposal
     const { data: proposalRow } = await supabase
@@ -111,7 +111,7 @@ export async function POST(request: Request) {
       .select("*")
       .eq("proposal_id", proposalId);
 
-    const milestones = milestoneRows || [];
+    const milestones = (milestoneRows || []) as any;
 
     // Check if project is complete
     const isComplete = checkProjectCompletion(proposal, milestones);

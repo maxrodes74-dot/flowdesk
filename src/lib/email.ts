@@ -164,7 +164,7 @@ function getEmailTemplate(name: string, freelancer: Freelancer): EmailTemplate {
             <p>I've prepared a proposal for your project. Here's what we'll deliver:</p>
             ${data.scope ? `
               <ul>
-                ${data.scope
+                ${(data.scope as any)
                   .map(
                     (item: Record<string, unknown>) =>
                       `<li><strong>${item.title}</strong><br>${item.description}</li>`
