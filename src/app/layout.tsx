@@ -1,12 +1,12 @@
-import type { Metadata } from "next";
-import { AppProvider } from "@/components/providers";
-import { PostHogProvider } from "@/components/posthog-provider";
-import "./globals.css";
+import type { Metadata } from 'next';
+import { Providers } from '@/components/providers';
+import { PostHogProvider } from '@/components/posthog-provider';
+import './globals.css';
 
 export const metadata: Metadata = {
-  title: "ScopePad — AI-Powered Client Portal for Freelancers",
+  title: 'Knowledge Terrarium — AI-Native Knowledge Graph',
   description:
-    "Send professional proposals in 90 seconds. Get paid on time, every time. AI proposals, client portals, and smart invoicing for freelancers.",
+    'A beautiful self-organizing knowledge garden. Build your personal knowledge graph with AI-powered linking, graph visualization, and semantic search.',
 };
 
 export default function RootLayout({
@@ -15,10 +15,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full antialiased">
-      <body className="min-h-full flex flex-col">
+    <html lang="en" className="dark">
+      <body className="min-h-full flex flex-col bg-[#0a0f0d] text-[#e8ede5]">
         <PostHogProvider>
-          <AppProvider>{children}</AppProvider>
+          <Providers>{children}</Providers>
         </PostHogProvider>
       </body>
     </html>

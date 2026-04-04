@@ -6,20 +6,18 @@ export default function AuthLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100 px-4">
+    <div className="min-h-screen flex flex-col items-center justify-center px-4" style={{ background: 'var(--bg)' }}>
       <div className="w-full max-w-md">
-        {/* Logo/Header */}
         <Link
           href="/"
-          className="flex items-center justify-center mb-8 group"
+          className="flex items-center justify-center mb-8"
         >
-          <div className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-            ScopePad
-          </div>
+          <span className="text-2xl font-bold" style={{ color: 'var(--accent)' }}>
+            Terrarium
+          </span>
         </Link>
 
-        {/* Auth Card */}
-        <div className="bg-white rounded-lg shadow-lg p-8 border border-slate-200/50">
+        <div className="rounded-xl p-8 border" style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
           {children}
         </div>
       </div>

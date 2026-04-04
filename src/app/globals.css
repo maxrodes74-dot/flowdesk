@@ -1,37 +1,78 @@
 @import "tailwindcss";
 
 @theme inline {
-  --color-background: #ffffff;
-  --color-foreground: #111827;
-  --color-primary: #2563eb;
-  --color-primary-dark: #1d4ed8;
-  --color-primary-light: #dbeafe;
-  --color-secondary: #7c3aed;
-  --color-accent: #06b6d4;
-  --color-success: #10b981;
+  --color-background: #0a0f0d;
+  --color-surface: #111916;
+  --color-surface-secondary: #1a2e23;
+  --color-border: #1a2e23;
+  --color-foreground: #e8ede5;
+  --color-foreground-secondary: #8a9b8e;
+  --color-accent: #4ade80;
+  --color-accent-secondary: #f59e0b;
+  --color-primary: #4ade80;
+  --color-success: #22c55e;
   --color-warning: #f59e0b;
   --color-danger: #ef4444;
-  --color-muted: #6b7280;
-  --color-border: #e5e7eb;
-  --color-surface: #f9fafb;
-  --color-card: #ffffff;
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-muted: #6b7875;
+  --font-sans: system-ui, -apple-system, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  --font-mono: ui-monospace, "SFMono-Regular", "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Menlo, Courier, monospace;
+}
+
+html {
+  scroll-behavior: smooth;
+  background-color: var(--color-background);
+  color: var(--color-foreground);
 }
 
 body {
-  background: var(--color-background);
+  background-color: var(--color-background);
   color: var(--color-foreground);
-  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  line-height: 1.6;
 }
 
-/* Smooth scrolling */
-html {
-  scroll-behavior: smooth;
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-background);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-foreground-secondary);
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-color: var(--color-border) var(--color-background);
+  scrollbar-width: thin;
 }
 
 /* Focus styles */
 *:focus-visible {
-  outline: 2px solid var(--color-primary);
+  outline: 2px solid var(--color-accent);
   outline-offset: 2px;
+}
+
+/* Smooth transitions */
+* {
+  transition-property: background-color, border-color, color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+/* Disable transitions for reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
 }
