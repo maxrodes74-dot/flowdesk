@@ -76,7 +76,7 @@ export default function LandingPage() {
         ) : (
           <>
             <Link
-              href="/auth/login"
+              href="/login"
               className="
                 px-8
                 py-3
@@ -95,7 +95,7 @@ export default function LandingPage() {
               <ArrowRight className="w-5 h-5" />
             </Link>
             <Link
-              href="/auth/signup"
+              href="/signup"
               className="
                 px-8
                 py-3

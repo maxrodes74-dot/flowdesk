@@ -21,7 +21,7 @@ export default async function GardenLayout({
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect('/auth/login');
+    redirect('/login');
   }
 
   let notes: Awaited<ReturnType<typeof getNotes>> = [];

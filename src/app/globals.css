@@ -18,6 +18,17 @@
   --font-mono: ui-monospace, "SFMono-Regular", "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Menlo, Courier, monospace;
 }
 
+/* Shorthand aliases used throughout components */
+:root {
+  --bg: var(--color-background);
+  --surface: var(--color-surface);
+  --border: var(--color-border);
+  --text: var(--color-foreground);
+  --text-secondary: var(--color-foreground-secondary);
+  --accent: var(--color-accent);
+  --accent-secondary: var(--color-accent-secondary);
+}
+
 html {
   scroll-behavior: smooth;
   background-color: var(--color-background);

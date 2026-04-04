@@ -35,18 +35,14 @@ export async function updateSession(request: NextRequest) {
 
   // Protected routes - redirect to login if not authenticated
   const isProtectedRoute =
-    request.nextUrl.pathname.startsWith("/dashboard") ||
-    request.nextUrl.pathname.startsWith("/onboarding");
+    request.nextUrl.pathname.startsWith("/garden");
 
-  // Auth routes - redirect to dashboard if already authenticated
+  // Auth routes - redirect to garden if already authenticated
   const isAuthRoute =
     request.nextUrl.pathname === "/login" ||
     request.nextUrl.pathname === "/signup";
 
-  // Portal routes are public
-  const isPortalRoute = request.nextUrl.pathname.startsWith("/portal");
-
-  if (isProtectedRoute && !user && !isPortalRoute) {
+  if (isProtectedRoute && !user) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);
@@ -54,7 +50,7 @@ export async function updateSession(request: NextRequest) {
 
   if (isAuthRoute && user) {
     const url = request.nextUrl.clone();
-    url.pathname = "/dashboard";
+    url.pathname = "/garden";
     return NextResponse.redirect(url);
   }
 
