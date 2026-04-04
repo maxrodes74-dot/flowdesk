@@ -25,7 +25,14 @@ export default function LoginPage() {
     });
 
     if (authError) {
-      setError("Invalid email or password.");
+      // Show user-friendly error messages for common cases
+      if (authError.message.includes("Invalid login credentials")) {
+        setError("Invalid email or password.");
+      } else if (authError.message.includes("Email not confirmed")) {
+        setError("Please confirm your email before logging in.");
+      } else {
+        setError(authError.message);
+      }
       setLoading(false);
       return;
     }
@@ -92,9 +99,14 @@ export default function LoginPage() {
         </div>
 
         <div>
-          <label htmlFor="password" className="block text-sm font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>
-            Password
-          </label>
+          <div className="flex items-center justify-between mb-2">
+            <label htmlFor="password" className="block text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
+              Password
+            </label>
+            <Link href="/forgot-password" className="text-xs font-medium" style={{ color: 'var(--accent)' }}>
+              Forgot?
+            </Link>
+          </div>
           <div className="relative">
             <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5" style={{ color: 'var(--text-secondary)' }} />
             <input
