@@ -1,11 +1,11 @@
 {
-  "name": "@scopepad/mcp-server",
+  "name": "@terrarium/mcp-server",
   "version": "0.1.0",
-  "description": "MCP server for ScopePad — connect your AI agent to your freelance workspace",
+  "description": "MCP server for Knowledge Terrarium — connect your AI agent to your knowledge graph",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
-    "scopepad-mcp": "dist/index.js"
+    "terrarium-mcp": "dist/index.js"
   },
   "scripts": {
     "build": "tsc",
@@ -25,12 +25,10 @@
   ],
   "keywords": [
     "mcp",
-    "scopepad",
-    "freelance",
+    "terrarium",
+    "knowledge-graph",
     "ai-agent",
-    "documents",
-    "proposals",
-    "invoices"
+    "notes"
   ],
   "license": "MIT",
   "engines": {

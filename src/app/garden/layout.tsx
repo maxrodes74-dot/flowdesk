@@ -24,9 +24,10 @@ export default async function GardenLayout({
     redirect('/login');
   }
 
-  let notes: Awaited<ReturnType<typeof getNotes>> = [];
+  let notes: Awaited<ReturnType<typeof getNotes>>['notes'] = [];
   try {
-    notes = await getNotes(user.id);
+    const result = await getNotes(user.id);
+    notes = result.notes;
   } catch (error) {
     console.error('Failed to load notes:', error);
   }

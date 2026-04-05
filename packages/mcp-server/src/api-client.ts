@@ -1,148 +1,61 @@
 /**
- * ScopePad API Client
- * Handles authenticated HTTP requests to the ScopePad REST API
+ * Knowledge Terrarium API Client
+ * Handles authenticated HTTP requests to the Terrarium REST API
  */
 
-interface RequestOptions {
-  method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
-  body?: Record<string, unknown>;
-}
-
-export class ScopepadClient {
+export class TerrariumClient {
   private apiKey: string;
   private baseUrl: string;
 
-  constructor(apiKey: string, baseUrl: string = "https://app.scopepad.com") {
+  constructor(apiKey: string, baseUrl: string = 'http://localhost:3000') {
     this.apiKey = apiKey;
     this.baseUrl = baseUrl;
   }
 
   // ============================================================
-  // Documents
+  // Notes
   // ============================================================
 
-  async listDocuments(filters?: {
-    type?: string;
-    status?: string;
-    client_id?: string;
+  async listNotes(options?: {
     limit?: number;
     offset?: number;
   }): Promise<any> {
     const params = new URLSearchParams();
-    if (filters?.type) params.append("type", filters.type);
-    if (filters?.status) params.append("status", filters.status);
-    if (filters?.client_id) params.append("client_id", filters.client_id);
-    if (filters?.limit) params.append("limit", String(filters.limit));
-    if (filters?.offset) params.append("offset", String(filters.offset));
+    if (options?.limit) params.append('limit', String(options.limit));
+    if (options?.offset) params.append('offset', String(options.offset));
 
-    const path = `/api/v1/documents${params.toString() ? `?${params.toString()}` : ""}`;
-    return this.request("GET", path);
+    const path = `/api/notes${params.toString() ? `?${params.toString()}` : ''}`;
+    return this.request('GET', path);
   }
 
-  async getDocument(id: string): Promise<any> {
-    return this.request("GET", `/api/v1/documents/${id}`);
+  async getNote(id: string): Promise<any> {
+    return this.request('GET', `/api/notes/${id}`);
   }
 
-  async createDocument(input: {
-    type: string;
+  async createNote(input: {
     title: string;
-    content: Record<string, unknown>;
-    client_id?: string;
-    template_id?: string;
-    parent_id?: string;
-    metadata?: Record<string, unknown>;
-    status?: string;
-    ai_generated?: boolean;
+    content?: string;
   }): Promise<any> {
-    return this.request("POST", "/api/v1/documents", input);
+    return this.request('POST', '/api/notes', input);
   }
 
-  async updateDocument(
+  async updateNote(
     id: string,
-    input: {
-      title?: string;
-      content?: Record<string, unknown>;
-      metadata?: Record<string, unknown>;
-      status?: string;
-      client_id?: string;
-    }
+    input: { title?: string; content?: string }
   ): Promise<any> {
-    return this.request("PUT", `/api/v1/documents/${id}`, input);
+    return this.request('PUT', `/api/notes/${id}`, input);
   }
 
-  async exportDocument(id: string): Promise<any> {
-    return this.request("POST", `/api/v1/documents/${id}/export`, {});
-  }
-
-  async sendDocument(
-    id: string,
-    input?: { client_email?: string; message?: string }
-  ): Promise<any> {
-    return this.request("POST", `/api/v1/documents/${id}/send`, input || {});
-  }
-
-  async deriveDocument(
-    id: string,
-    input: { type: string; title: string; content?: Record<string, unknown> }
-  ): Promise<any> {
-    return this.request(
-      "POST",
-      `/api/v1/documents/${id}/derive`,
-      input
-    );
+  async deleteNote(id: string): Promise<any> {
+    return this.request('DELETE', `/api/notes/${id}`);
   }
 
   // ============================================================
-  // Clients
+  // Search
   // ============================================================
 
-  async listClients(search?: string): Promise<any> {
-    const path = search ? `/api/v1/clients?search=${encodeURIComponent(search)}` : "/api/v1/clients";
-    return this.request("GET", path);
-  }
-
-  async getClient(id: string): Promise<any> {
-    return this.request("GET", `/api/v1/clients/${id}`);
-  }
-
-  async createClient(input: {
-    name: string;
-    email: string;
-    company?: string;
-  }): Promise<any> {
-    return this.request("POST", "/api/v1/clients", input);
-  }
-
-  // ============================================================
-  // Templates
-  // ============================================================
-
-  async listTemplates(filters?: {
-    type?: string;
-    category?: string;
-  }): Promise<any> {
-    const params = new URLSearchParams();
-    if (filters?.type) params.append("type", filters.type);
-    if (filters?.category) params.append("category", filters.category);
-
-    const path = `/api/v1/templates${params.toString() ? `?${params.toString()}` : ""}`;
-    return this.request("GET", path);
-  }
-
-  async getTemplate(id: string): Promise<any> {
-    return this.request("GET", `/api/v1/templates/${id}`);
-  }
-
-  // ============================================================
-  // Freelancer Profile & Stats
-  // ============================================================
-
-  async getProfile(): Promise<any> {
-    return this.request("GET", "/api/v1/freelancer/profile");
-  }
-
-  async getDashboard(): Promise<any> {
-    return this.request("GET", "/api/v1/freelancer/dashboard");
+  async searchNotes(query: string): Promise<any> {
+    return this.request('GET', `/api/search?q=${encodeURIComponent(query)}`);
   }
 
   // ============================================================
@@ -150,22 +63,19 @@ export class ScopepadClient {
   // ============================================================
 
   private async request(
-    method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH",
+    method: 'GET' | 'POST' | 'PUT' | 'DELETE',
     path: string,
     body?: Record<string, unknown>
   ): Promise<any> {
     const url = `${this.baseUrl}${path}`;
     const headers: Record<string, string> = {
       Authorization: `Bearer ${this.apiKey}`,
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     };
 
-    const options: RequestInit = {
-      method,
-      headers,
-    };
+    const options: RequestInit = { method, headers };
 
-    if (body && (method === "POST" || method === "PUT" || method === "PATCH")) {
+    if (body && (method === 'POST' || method === 'PUT')) {
       options.body = JSON.stringify(body);
     }
 
@@ -173,9 +83,7 @@ export class ScopepadClient {
 
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(
-        `ScopePad API error (${response.status}): ${errorText}`
-      );
+      throw new Error(`Terrarium API error (${response.status}): ${errorText}`);
     }
 
     return response.json();
