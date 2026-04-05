@@ -15,12 +15,12 @@ export default function GardenHomePage() {
       try {
         const response = await fetch('/api/notes');
         if (response.ok) {
-          const data = await response.json();
-          setNotes(data);
+          const result = await response.json();
+          setNotes(result.data);
 
           // Redirect to most recent note if available
-          if (data.length > 0) {
-            router.push(`/garden/${data[0].id}`);
+          if (result.data.length > 0) {
+            router.push(`/garden/${result.data[0].id}`);
           }
         }
       } catch (error) {

@@ -22,9 +22,19 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const notes = await getNotes(user.id);
+    const searchParams = req.nextUrl.searchParams;
+    const limit = parseInt(searchParams.get('limit') || '50', 10);
+    const offset = parseInt(searchParams.get('offset') || '0', 10);
 
-    return NextResponse.json(notes);
+    const { notes, total } = await getNotes(user.id, { limit, offset });
+
+    return NextResponse.json({
+      data: notes,
+      total,
+      limit,
+      offset,
+      hasMore: offset + notes.length < total,
+    });
   } catch (error) {
     console.error('GET /api/notes error:', error);
     return NextResponse.json(

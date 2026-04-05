@@ -12,20 +12,29 @@ export type Note = {
 };
 
 /**
- * Fetch all non-archived notes for a user, ordered by updated_at descending
+ * Fetch non-archived notes for a user, ordered by updated_at descending.
+ * Supports cursor-based pagination via `limit` and `offset`.
  */
-export async function getNotes(userId: string): Promise<Note[]> {
+export async function getNotes(
+  userId: string,
+  options: { limit?: number; offset?: number } = {}
+): Promise<{ notes: Note[]; total: number }> {
   const supabase = await createClient();
+  const limit = Math.min(options.limit ?? 50, 100);
+  const offset = options.offset ?? 0;
 
-  const { data, error } = await supabase
+  const query = supabase
     .from('notes')
-    .select('id, user_id, title, content, metadata, is_archived, created_at, updated_at')
+    .select('id, user_id, title, content, metadata, is_archived, created_at, updated_at', { count: 'exact' })
     .eq('user_id', userId)
     .eq('is_archived', false)
-    .order('updated_at', { ascending: false });
+    .order('updated_at', { ascending: false })
+    .range(offset, offset + limit - 1);
+
+  const { data, error, count } = await query;
 
   if (error) throw error;
-  return (data as Note[]) || [];
+  return { notes: (data as Note[]) || [], total: count ?? 0 };
 }
 
 /**
