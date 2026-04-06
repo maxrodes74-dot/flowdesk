@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import type { Database } from '@/lib/supabase/types';
+import { resolveModel } from '@/lib/models';
 
 type Automation = Database['public']['Tables']['automations']['Row'];
 
@@ -38,7 +39,7 @@ async function getUserLLMConfig(userId: string): Promise<{
   return {
     provider: provider as 'anthropic' | 'openai',
     apiKey: decodedKey,
-    model: model || (provider === 'anthropic' ? 'claude-haiku-4-5-20251001' : 'gpt-4o-mini'),
+    model: resolveModel(provider, model),
   };
 }
 

@@ -4,12 +4,11 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { ArrowLeft, Key, Check, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
+import { VALID_MODELS } from '@/lib/models';
+
 type Provider = 'anthropic' | 'openai';
 
-const MODELS: Record<Provider, string[]> = {
-  anthropic: ['claude-sonnet-4-20250514', 'claude-haiku-4-5-20251001'],
-  openai: ['gpt-4o-mini', 'gpt-4o'],
-};
+const MODELS: Record<Provider, string[]> = VALID_MODELS as Record<Provider, string[]>;
 
 const PROVIDER_LABELS: Record<Provider, string> = {
   anthropic: 'Anthropic (Claude)',

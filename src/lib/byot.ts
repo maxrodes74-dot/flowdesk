@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
+import { resolveModel } from '@/lib/models';
 
 export type BYOTConfig = {
   provider: 'anthropic' | 'openai';
@@ -32,20 +33,9 @@ export async function getBYOTConfig(userId: string): Promise<BYOTConfig | null> 
   // Decode the base64-encoded key
   const apiKey = Buffer.from(settings.llm_api_key_encrypted as string, 'base64').toString('utf-8');
   const provider = (settings.llm_provider as 'anthropic' | 'openai') || 'anthropic';
-  const model = (settings.llm_model as string) || getDefaultModel(provider);
+  const model = resolveModel(provider, settings.llm_model as string);
 
   return { provider, apiKey, model };
-}
-
-function getDefaultModel(provider: 'anthropic' | 'openai'): string {
-  switch (provider) {
-    case 'anthropic':
-      return 'claude-sonnet-4-20250514';
-    case 'openai':
-      return 'gpt-4o';
-    default:
-      return 'claude-sonnet-4-20250514';
-  }
 }
 
 /**

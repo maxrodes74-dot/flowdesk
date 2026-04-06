@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
+import { resolveModel } from '@/lib/models';
 
 /**
  * POST /api/settings/test
@@ -26,7 +27,7 @@ export async function POST() {
     const settings = profile.settings as Record<string, unknown>;
     const keyEncoded = settings.llm_api_key_encrypted as string;
     const provider = (settings.llm_provider as string) || 'anthropic';
-    const model = settings.llm_model as string;
+    const model = resolveModel(provider, settings.llm_model as string);
 
     if (!keyEncoded) {
       return NextResponse.json({ error: 'No API key saved' }, { status: 400 });
@@ -43,7 +44,7 @@ export async function POST() {
           'anthropic-version': '2023-06-01',
         },
         body: JSON.stringify({
-          model: model || 'claude-haiku-4-5-20251001',
+          model: model,
           max_tokens: 5,
           messages: [{ role: 'user', content: 'Hi' }],
         }),
@@ -65,7 +66,7 @@ export async function POST() {
           Authorization: `Bearer ${apiKey}`,
         },
         body: JSON.stringify({
-          model: model || 'gpt-4o-mini',
+          model: model,
           max_tokens: 5,
           messages: [{ role: 'user', content: 'Hi' }],
         }),
