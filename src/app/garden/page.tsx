@@ -1,25 +1,24 @@
 'use client';
 
 import React, { useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
 import Terrarium from '@/components/terrarium/terrarium';
 import EditorPanel from '@/components/terrarium/editor-panel';
 import Toolbar from '@/components/terrarium/toolbar';
 import SearchModal from '@/components/terrarium/search-modal';
+import LeftSidebar, { type SidebarPanel } from '@/components/terrarium/left-sidebar';
 
 export default function GardenPage() {
-  const router = useRouter();
   const [selectedNoteId, setSelectedNoteId] = useState<string | null>(null);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [activePanel, setActivePanel] = useState<SidebarPanel>(null);
   const [noteCount, setNoteCount] = useState(0);
 
-  // Track note count from terrarium data
+  const handleNoteCountChange = useCallback((count: number) => {
+    setNoteCount(count);
+  }, []);
+
   const handleSelectNote = useCallback((noteId: string) => {
-    if (noteId) {
-      setSelectedNoteId(noteId);
-    } else {
-      setSelectedNoteId(null);
-    }
+    setSelectedNoteId(noteId || null);
   }, []);
 
   const handleSeed = useCallback(async () => {
@@ -46,6 +45,10 @@ export default function GardenPage() {
     setSelectedNoteId(null);
   }, []);
 
+  const handleSetPanel = useCallback((panel: SidebarPanel) => {
+    setActivePanel(panel);
+  }, []);
+
   // Global ⌘K handler
   React.useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
@@ -59,18 +62,28 @@ export default function GardenPage() {
   }, []);
 
   return (
-    <div className="relative h-screen w-full overflow-hidden">
+    <div className="relative h-full w-full flex flex-col">
       {/* The Terrarium fills the entire viewport */}
       <Terrarium
         onSelectNote={handleSelectNote}
         selectedNoteId={selectedNoteId}
+        onNoteCountChange={handleNoteCountChange}
       />
 
       {/* Floating toolbar */}
       <Toolbar
         onSeed={handleSeed}
         onSearch={() => setIsSearchOpen(true)}
+        activePanel={activePanel}
+        onSetPanel={handleSetPanel}
         noteCount={noteCount}
+      />
+
+      {/* Left sidebar — always mounted, slides via CSS transform */}
+      <LeftSidebar
+        activePanel={activePanel}
+        onSelectNote={handleSelectNote}
+        selectedNoteId={selectedNoteId}
       />
 
       {/* Editor panel slides in from right */}

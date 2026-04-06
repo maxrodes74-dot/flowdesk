@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { getNote, updateNote, deleteNote } from '@/lib/notes';
+import { embedNote, autoLinkNote } from '@/lib/embeddings';
 import { NextRequest, NextResponse } from 'next/server';
 
 type Params = {
@@ -107,6 +108,17 @@ export async function PUT(
     if (content !== undefined) updateData.content = content;
 
     const updated = await updateNote(noteId, updateData);
+
+    // Re-embed and re-link when content changes (fire-and-forget)
+    if (content !== undefined) {
+      const finalTitle = title ?? note.title;
+      const finalContent = content;
+      if (finalContent.trim().length > 0) {
+        embedNote(noteId, finalTitle, finalContent).then(() => {
+          autoLinkNote(noteId, user.id).catch(console.error);
+        }).catch(console.error);
+      }
+    }
 
     return NextResponse.json(updated);
   } catch (error) {

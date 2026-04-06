@@ -1,23 +1,43 @@
 'use client';
 
 import React from 'react';
-import { Plus, Search, LogOut, Zap, Settings } from 'lucide-react';
+import { Plus, Search, LogOut, Settings, List, Zap } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import type { SidebarPanel } from './left-sidebar';
 
 interface ToolbarProps {
   onSeed: () => void;
   onSearch: () => void;
+  activePanel: SidebarPanel;
+  onSetPanel: (panel: SidebarPanel) => void;
   noteCount: number;
 }
 
-export default function Toolbar({ onSeed, onSearch, noteCount }: ToolbarProps) {
+export default function Toolbar({ onSeed, onSearch, activePanel, onSetPanel, noteCount }: ToolbarProps) {
   const { signOut } = useAuth();
+  const router = useRouter();
+
+  const sidebarOpen = activePanel !== null;
+
+  const handleToggleNotes = () => {
+    onSetPanel(activePanel === 'notes' ? null : 'notes');
+  };
+
+  const handleToggleAutomations = () => {
+    onSetPanel(activePanel === 'automations' ? null : 'automations');
+  };
 
   return (
     <>
-      {/* Top-left: Brand */}
-      <div className="absolute top-4 left-4 z-20 flex items-center gap-3">
+      {/* Top-left: Brand + panel toggles — shifts right when sidebar is open */}
+      <div
+        className="absolute top-4 z-40 flex items-center gap-2"
+        style={{
+          left: sidebarOpen ? '336px' : '16px',
+          transition: 'left 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        }}
+      >
         <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[var(--color-surface)]/80 backdrop-blur-sm border border-[var(--color-border)]">
           <span className="text-lg">🌿</span>
           <span className="text-sm font-semibold text-[var(--color-foreground)]">
@@ -27,21 +47,32 @@ export default function Toolbar({ onSeed, onSearch, noteCount }: ToolbarProps) {
             {noteCount} {noteCount === 1 ? 'note' : 'notes'}
           </span>
         </div>
-      </div>
-
-      {/* Top-right: Nav + Settings */}
-      <div className="absolute top-4 right-4 z-20 flex items-center gap-2">
-        <Link
-          href="/garden/automations"
-          className="flex items-center gap-1.5 px-3 py-2.5 rounded-lg bg-[var(--color-surface)]/80 backdrop-blur-sm
-            border border-[var(--color-border)]
-            text-[var(--color-foreground-secondary)] hover:text-[var(--color-accent)]
-            text-xs font-medium transition-colors"
+        <button
+          onClick={handleToggleNotes}
+          className={`p-2.5 rounded-lg backdrop-blur-sm border transition-colors ${
+            activePanel === 'notes'
+              ? 'bg-[var(--color-accent)]/20 border-[var(--color-accent)]/40 text-[var(--color-accent)]'
+              : 'bg-[var(--color-surface)]/80 border-[var(--color-border)] text-[var(--color-foreground-secondary)] hover:text-[var(--color-foreground)]'
+          }`}
+          title="Notes"
+        >
+          <List className="w-4 h-4" />
+        </button>
+        <button
+          onClick={handleToggleAutomations}
+          className={`p-2.5 rounded-lg backdrop-blur-sm border transition-colors ${
+            activePanel === 'automations'
+              ? 'bg-[var(--color-accent)]/20 border-[var(--color-accent)]/40 text-[var(--color-accent)]'
+              : 'bg-[var(--color-surface)]/80 border-[var(--color-border)] text-[var(--color-foreground-secondary)] hover:text-[var(--color-foreground)]'
+          }`}
           title="Automations"
         >
           <Zap className="w-4 h-4" />
-          Automations
-        </Link>
+        </button>
+      </div>
+
+      {/* Top-right: Actions */}
+      <div className="absolute top-4 right-4 z-20 flex items-center gap-2">
         <button
           onClick={onSearch}
           className="p-2.5 rounded-lg bg-[var(--color-surface)]/80 backdrop-blur-sm
@@ -52,8 +83,8 @@ export default function Toolbar({ onSeed, onSearch, noteCount }: ToolbarProps) {
         >
           <Search className="w-4 h-4" />
         </button>
-        <Link
-          href="/garden/settings"
+        <button
+          onClick={() => router.push('/garden/settings')}
           className="p-2.5 rounded-lg bg-[var(--color-surface)]/80 backdrop-blur-sm
             border border-[var(--color-border)]
             text-[var(--color-foreground-secondary)] hover:text-[var(--color-foreground)]
@@ -61,7 +92,7 @@ export default function Toolbar({ onSeed, onSearch, noteCount }: ToolbarProps) {
           title="Settings"
         >
           <Settings className="w-4 h-4" />
-        </Link>
+        </button>
         <button
           onClick={() => signOut()}
           className="p-2.5 rounded-lg bg-[var(--color-surface)]/80 backdrop-blur-sm

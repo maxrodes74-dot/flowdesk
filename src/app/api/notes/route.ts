@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { getNotes, createNote } from '@/lib/notes';
+import { embedNote, autoLinkNote } from '@/lib/embeddings';
 import { NextRequest, NextResponse } from 'next/server';
 
 /**
@@ -58,6 +59,14 @@ export async function POST(req: NextRequest) {
     const { title = 'Untitled', content = '' } = body;
 
     const note = await createNote(user.id, title, content);
+
+    // Fire-and-forget: embed note and auto-link in background
+    // Don't block the response on AI operations
+    if (content.trim().length > 0) {
+      embedNote(note.id, title, content).then(() => {
+        autoLinkNote(note.id, user.id).catch(console.error);
+      }).catch(console.error);
+    }
 
     return NextResponse.json(note, { status: 201 });
   } catch (error) {
