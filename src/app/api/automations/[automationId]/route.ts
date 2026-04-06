@@ -2,14 +2,134 @@ import { createClient } from '@/lib/supabase/server';
 import { NextRequest, NextResponse } from 'next/server';
 import { getBYOTConfig, callBYOT } from '@/lib/byot';
 import { embedNote, autoLinkNote } from '@/lib/embeddings';
+import type { Database } from '@/lib/supabase/types';
 
-/**
- * POST /api/automations/:automationId
- * Run an automation manually.
- */
+type Params = { automationId: string };
+type AutomationUpdate = Database['public']['Tables']['automations']['Update'];
+
+// ─── Helper: is this a UUID? ───
+function isUUID(s: string): boolean {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// GET /api/automations/[automationId]  — fetch a single automation
+// ═══════════════════════════════════════════════════════════════
+export async function GET(
+  _req: NextRequest,
+  { params }: { params: Promise<Params> }
+) {
+  try {
+    const { automationId } = await params;
+    const supabase = await createClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { data, error } = await supabase
+      .from('automations')
+      .select('*')
+      .eq('id', automationId)
+      .eq('user_id', user.id)
+      .single();
+
+    if (error || !data) {
+      return NextResponse.json({ error: 'Automation not found' }, { status: 404 });
+    }
+
+    return NextResponse.json(data);
+  } catch (error) {
+    console.error('GET /api/automations/[id] error:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PUT /api/automations/[automationId]  — update an automation
+// ═══════════════════════════════════════════════════════════════
+export async function PUT(
+  req: NextRequest,
+  { params }: { params: Promise<Params> }
+) {
+  try {
+    const { automationId } = await params;
+    const supabase = await createClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const body = await req.json();
+    const update: AutomationUpdate = {};
+    if (body.name !== undefined) update.name = body.name;
+    if (body.description !== undefined) update.description = body.description;
+    if (body.prompt !== undefined) update.prompt = body.prompt;
+    if (body.schedule !== undefined) update.schedule = body.schedule;
+    if (body.is_enabled !== undefined) update.is_enabled = body.is_enabled;
+
+    const { data, error } = await supabase
+      .from('automations')
+      .update(update)
+      .eq('id', automationId)
+      .eq('user_id', user.id)
+      .select('*')
+      .single();
+
+    if (error || !data) {
+      return NextResponse.json({ error: 'Automation not found' }, { status: 404 });
+    }
+
+    return NextResponse.json(data);
+  } catch (error) {
+    console.error('PUT /api/automations/[id] error:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// DELETE /api/automations/[automationId]  — delete an automation
+// ═══════════════════════════════════════════════════════════════
+export async function DELETE(
+  _req: NextRequest,
+  { params }: { params: Promise<Params> }
+) {
+  try {
+    const { automationId } = await params;
+    const supabase = await createClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Delete runs first (FK constraint)
+    await supabase
+      .from('automation_runs')
+      .delete()
+      .eq('automation_id', automationId)
+      .eq('user_id', user.id);
+
+    const { error } = await supabase
+      .from('automations')
+      .delete()
+      .eq('id', automationId)
+      .eq('user_id', user.id);
+
+    if (error) throw error;
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('DELETE /api/automations/[id] error:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// POST /api/automations/[automationId]  — run a sidebar automation
+// (Legacy: sidebar sends hardcoded string IDs like "auto-link")
+// ═══════════════════════════════════════════════════════════════
 export async function POST(
   req: NextRequest,
-  { params }: { params: Promise<{ automationId: string }> }
+  { params }: { params: Promise<Params> }
 ) {
   try {
     const { automationId } = await params;
@@ -24,6 +144,16 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // If it's a UUID, this is a DB automation — shouldn't hit this route
+    // (the /run sub-route handles that), but handle gracefully
+    if (isUUID(automationId)) {
+      return NextResponse.json(
+        { error: 'Use POST /api/automations/[id]/run to execute DB automations' },
+        { status: 400 }
+      );
+    }
+
+    // Sidebar hardcoded automations
     switch (automationId) {
       case 'auto-link':
         return await runAutoLink(user.id);
@@ -66,12 +196,11 @@ export async function POST(
 async function runAutoLink(userId: string) {
   const supabase = await createClient();
 
-  // Get all user notes
   const { data: notes, error } = await supabase
     .from('notes')
     .select('id, title, content, embedding')
     .eq('user_id', userId)
-    .is('archived_at', null);
+    .eq('is_archived', false);
 
   if (error) throw error;
   if (!notes || notes.length === 0) {
@@ -82,13 +211,10 @@ async function runAutoLink(userId: string) {
   let linked = 0;
 
   for (const note of notes) {
-    // Embed notes that don't have embeddings yet
     if (!note.embedding) {
       await embedNote(note.id, note.title, note.content);
       embedded++;
     }
-
-    // Run auto-link
     const result = await autoLinkNote(note.id, userId);
     linked += result.created;
   }
@@ -112,19 +238,17 @@ async function runAutoTag(userId: string) {
 
   const supabase = await createClient();
 
-  // Get all notes
   const { data: notes, error } = await supabase
     .from('notes')
     .select('id, title, content')
     .eq('user_id', userId)
-    .is('archived_at', null);
+    .eq('is_archived', false);
 
   if (error) throw error;
   if (!notes || notes.length === 0) {
     return NextResponse.json({ message: 'No notes to tag', results: { tagged: 0 } });
   }
 
-  // Get notes that already have tags
   const { data: existingTags } = await supabase
     .from('tags')
     .select('note_id')
@@ -148,8 +272,6 @@ Rules:
 - Be consistent: similar notes should get similar tags`;
 
   let tagged = 0;
-
-  // Process in batches of 5 to avoid rate limits
   const batch = untagged.slice(0, 20);
 
   for (const note of batch) {
@@ -157,12 +279,10 @@ Rules:
       const userPrompt = `Classify this note:\n\nTitle: ${note.title}\n\nContent:\n${note.content.slice(0, 2000)}`;
       const response = await callBYOT(config, systemPrompt, userPrompt);
 
-      // Parse the JSON array from the LLM response
       const jsonMatch = response.match(/\[[\s\S]*\]/);
       if (jsonMatch) {
         const tags = JSON.parse(jsonMatch[0]) as string[];
         if (Array.isArray(tags) && tags.length > 0) {
-          // Insert tags into the tags table (upsert to avoid duplicates)
           for (const tag of tags.slice(0, 3)) {
             await supabase
               .from('tags')
@@ -176,7 +296,6 @@ Rules:
       }
     } catch (err) {
       console.error(`Failed to tag note ${note.id}:`, err);
-      // Continue with other notes
     }
   }
 
@@ -189,15 +308,12 @@ Rules:
 // ─── Reorganize (embedding-based, no BYOT key) ───
 
 async function runReorganize(userId: string) {
-  // For now, just re-run auto-link to refresh connections
-  // Full spatial reorganization would update x/y positions based on clusters
   return runAutoLink(userId);
 }
 
 // ─── Cluster Emergence (embedding-based, no BYOT key) ───
 
 async function runClusterEmergence(userId: string) {
-  // Placeholder — needs k-means or DBSCAN on embeddings
   return NextResponse.json({
     message: 'Cluster emergence scan complete (basic mode)',
     results: { clusters: 0 },
@@ -221,7 +337,7 @@ async function runLLMAutomation(userId: string, automationId: string) {
     .from('notes')
     .select('id, title, content, updated_at')
     .eq('user_id', userId)
-    .is('archived_at', null)
+    .eq('is_archived', false)
     .order('updated_at', { ascending: false })
     .limit(50);
 

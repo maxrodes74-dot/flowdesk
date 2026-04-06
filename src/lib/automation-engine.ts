@@ -22,7 +22,7 @@ async function getUserLLMConfig(userId: string): Promise<{
 
   const settings = profile.settings as Record<string, unknown>;
   const provider = settings.llm_provider as string;
-  const apiKey = settings.llm_api_key as string;
+  const apiKey = settings.llm_api_key_encrypted as string;
   const model = settings.llm_model as string;
 
   if (!apiKey || !provider) return null;

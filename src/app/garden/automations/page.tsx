@@ -506,7 +506,7 @@ export default function AutomationsPage() {
   useEffect(() => {
     Promise.all([
       fetchAutomations(),
-      fetch('/api/settings').then((r) => r.json()).then((d) => setHasApiKey(d.has_api_key)),
+      fetch('/api/settings').then((r) => r.json()).then((d) => setHasApiKey(d.llm_api_key_set)),
     ]).finally(() => setLoading(false));
   }, [fetchAutomations]);
 
