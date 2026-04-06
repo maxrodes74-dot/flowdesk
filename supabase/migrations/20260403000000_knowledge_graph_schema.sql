@@ -57,8 +57,6 @@ create table profiles (
   id uuid primary key references auth.users(id) on delete cascade,
   display_name text,
   tier text default 'free' check (tier in ('free', 'pro')),
-  stripe_customer_id text,
-  stripe_subscription_id text,
   settings jsonb default '{}',
   created_at timestamptz default now(),
   updated_at timestamptz default now()
