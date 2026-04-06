@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 type Provider = 'anthropic' | 'openai';
 
 const MODELS: Record<Provider, string[]> = {
-  anthropic: ['claude-sonnet-4-5-20250514', 'claude-haiku-4-5-20251001'],
+  anthropic: ['claude-sonnet-4-20250514', 'claude-haiku-4-5-20251001'],
   openai: ['gpt-4o-mini', 'gpt-4o'],
 };
 
