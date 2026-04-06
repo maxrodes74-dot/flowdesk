@@ -303,6 +303,7 @@ function AutomationsContent() {
   const [hasKey, setHasKey] = useState<boolean | null>(null);
   const [runningId, setRunningId] = useState<string | null>(null);
   const [statuses, setStatuses] = useState<Record<string, AutomationStatus>>({});
+  const [results, setResults] = useState<Record<string, string>>({});
 
   // Check if user has a BYOT key set
   useEffect(() => {
@@ -329,31 +330,37 @@ function AutomationsContent() {
         method: 'POST',
       });
 
+      const data = await res.json();
+
       if (res.ok) {
-        const data = await res.json();
         setStatuses((prev) => ({ ...prev, [automationId]: 'done' }));
-        // Reset after 5s
+        setResults((prev) => ({ ...prev, [automationId]: data.message || 'Done' }));
         setTimeout(() => {
           setStatuses((prev) => ({ ...prev, [automationId]: 'idle' }));
-        }, 5000);
+        }, 10000);
       } else {
         setStatuses((prev) => ({ ...prev, [automationId]: 'error' }));
+        setResults((prev) => ({ ...prev, [automationId]: data.error || 'Failed' }));
       }
     } catch {
       setStatuses((prev) => ({ ...prev, [automationId]: 'error' }));
+      setResults((prev) => ({ ...prev, [automationId]: 'Network error' }));
     } finally {
       setRunningId(null);
     }
   }, []);
 
   return (
-    <div className="flex-1 overflow-y-auto">
+    <div className="flex-1 overflow-y-auto flex flex-col">
       <div className="px-3 pt-4 pb-2">
         <h2 className="text-xs font-semibold text-[var(--color-foreground-secondary)] uppercase tracking-wider mb-1 px-1">
-          Automations
+          Quick Automations
         </h2>
         <p className="text-[10px] text-[var(--color-muted)] px-1 mb-3">
-          Your creatures do these while you're away.
+          One-click runs. For custom prompts & scheduling,{' '}
+          <a href="/garden/automations" className="text-[var(--color-accent)] hover:underline">
+            open the full manager
+          </a>.
           {hasKey === false && (
             <span className="text-[var(--color-warning)]">
               {' '}Add an API key in Settings to enable LLM automations.
@@ -362,9 +369,10 @@ function AutomationsContent() {
         </p>
       </div>
 
-      <div className="px-2 pb-4 space-y-1">
+      <div className="px-2 pb-2 space-y-1 flex-1">
         {AUTOMATIONS.map((auto) => {
           const status = statuses[auto.id] || 'idle';
+          const result = results[auto.id];
           const needsKey = auto.requiresKey && !hasKey;
           const isRunning = runningId === auto.id;
 
@@ -398,6 +406,16 @@ function AutomationsContent() {
                   <p className="text-[10px] text-[var(--color-muted)] mt-1">
                     {auto.trigger}
                   </p>
+                  {/* Show result/error inline */}
+                  {(status === 'done' || status === 'error') && result && (
+                    <p className={`text-[10px] mt-1.5 px-2 py-1 rounded ${
+                      status === 'error'
+                        ? 'bg-[var(--color-danger)]/10 text-[var(--color-danger)]'
+                        : 'bg-[var(--color-success)]/10 text-[var(--color-success)]'
+                    }`}>
+                      {result.length > 150 ? result.slice(0, 150) + '…' : result}
+                    </p>
+                  )}
                 </div>
 
                 {/* Run button */}
@@ -429,6 +447,17 @@ function AutomationsContent() {
             </div>
           );
         })}
+      </div>
+
+      {/* Link to full automations manager */}
+      <div className="px-3 pb-4 pt-2 border-t border-[var(--color-border)]">
+        <a
+          href="/garden/automations"
+          className="flex items-center justify-center gap-2 w-full px-3 py-2.5 rounded-lg bg-[var(--color-accent)]/10 border border-[var(--color-accent)]/20 text-[var(--color-accent)] text-xs font-medium hover:bg-[var(--color-accent)]/20 transition-colors"
+        >
+          <Zap className="w-3.5 h-3.5" />
+          Manage Automations & Custom Prompts
+        </a>
       </div>
     </div>
   );

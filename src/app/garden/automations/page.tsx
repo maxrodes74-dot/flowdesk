@@ -83,7 +83,8 @@ function AutomationCard({
   const [running, setRunning] = useState(automation.last_run_status === 'running');
   const [customInput, setCustomInput] = useState('');
   const [showRuns, setShowRuns] = useState(false);
-  const [runs, setRuns] = useState<Array<{ id: string; status: string; result: string | null; started_at: string; duration_ms: number | null; tokens_used: number }>>([]);
+  const [runs, setRuns] = useState<Array<{ id: string; status: string; result: string | null; error_message: string | null; started_at: string; duration_ms: number | null; tokens_used: number; notes_created: number; notes_updated: number; links_created: number; links_removed: number }>>([]);
+  const [expandedRunId, setExpandedRunId] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const needsInput = automation.prompt.includes('{{custom_input}}');
 
@@ -270,25 +271,57 @@ function AutomationCard({
             {showRuns ? 'Hide run history' : 'Show run history'}
           </button>
           {showRuns && (
-            <div className="mt-2 space-y-1.5">
+            <div className="mt-2 space-y-1">
               {runs.length === 0 ? (
                 <p className="text-xs text-[var(--color-muted)]">No runs yet</p>
               ) : (
-                runs.slice(0, 10).map((run) => (
-                  <div key={run.id} className="flex items-center gap-2 text-xs">
-                    <StatusDot status={run.status} />
-                    <span className="text-[var(--color-foreground-secondary)]">{timeAgo(run.started_at)}</span>
-                    {run.duration_ms && (
-                      <span className="text-[var(--color-muted)]">{(run.duration_ms / 1000).toFixed(1)}s</span>
-                    )}
-                    {run.tokens_used > 0 && (
-                      <span className="text-[var(--color-muted)]">{run.tokens_used} tokens</span>
-                    )}
-                    {run.result && (
-                      <span className="text-[var(--color-foreground-secondary)] truncate flex-1">{run.result}</span>
-                    )}
-                  </div>
-                ))
+                runs.slice(0, 10).map((run) => {
+                  const isExpanded = expandedRunId === run.id;
+                  return (
+                    <div key={run.id} className="rounded-lg border border-[var(--color-border)] overflow-hidden">
+                      <button
+                        onClick={() => setExpandedRunId(isExpanded ? null : run.id)}
+                        className="w-full flex items-center gap-2 text-xs px-3 py-2 hover:bg-[var(--color-surface-secondary)] transition-colors"
+                      >
+                        <StatusDot status={run.status} />
+                        <span className="text-[var(--color-foreground-secondary)]">{timeAgo(run.started_at)}</span>
+                        {run.duration_ms != null && (
+                          <span className="text-[var(--color-muted)]">{(run.duration_ms / 1000).toFixed(1)}s</span>
+                        )}
+                        {run.tokens_used > 0 && (
+                          <span className="text-[var(--color-muted)]">{run.tokens_used} tok</span>
+                        )}
+                        <span className={`truncate flex-1 text-left ${
+                          run.status === 'error' ? 'text-[var(--color-danger)]' : 'text-[var(--color-foreground-secondary)]'
+                        }`}>
+                          {run.error_message || run.result || '—'}
+                        </span>
+                        {isExpanded ? <ChevronDown className="w-3 h-3 shrink-0 text-[var(--color-muted)]" /> : <ChevronRight className="w-3 h-3 shrink-0 text-[var(--color-muted)]" />}
+                      </button>
+                      {isExpanded && (
+                        <div className="px-3 pb-3 border-t border-[var(--color-border)]">
+                          {/* Stats */}
+                          {(run.notes_created > 0 || run.notes_updated > 0 || run.links_created > 0 || run.links_removed > 0) && (
+                            <div className="flex gap-3 mt-2 mb-2 text-[10px]">
+                              {run.notes_created > 0 && <span className="text-[var(--color-success)]">+{run.notes_created} notes</span>}
+                              {run.notes_updated > 0 && <span className="text-[var(--color-accent)]">{run.notes_updated} updated</span>}
+                              {run.links_created > 0 && <span className="text-[var(--color-success)]">+{run.links_created} links</span>}
+                              {run.links_removed > 0 && <span className="text-[var(--color-danger)]">-{run.links_removed} links</span>}
+                            </div>
+                          )}
+                          {/* Full result or error */}
+                          <pre className={`mt-2 p-2.5 rounded-lg text-xs font-mono whitespace-pre-wrap max-h-60 overflow-y-auto ${
+                            run.status === 'error'
+                              ? 'bg-[var(--color-danger)]/10 text-[var(--color-danger)]'
+                              : 'bg-[var(--color-background)] text-[var(--color-foreground-secondary)] border border-[var(--color-border)]'
+                          }`}>
+                            {run.error_message || run.result || 'No output'}
+                          </pre>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })
               )}
             </div>
           )}

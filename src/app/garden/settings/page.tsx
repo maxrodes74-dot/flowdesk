@@ -29,6 +29,8 @@ export default function SettingsPage() {
   const [apiKeySet, setApiKeySet] = useState(false);
   const [model, setModel] = useState('');
   const [showKey, setShowKey] = useState(false);
+  const [testStatus, setTestStatus] = useState<'idle' | 'testing' | 'ok' | 'fail'>('idle');
+  const [testMessage, setTestMessage] = useState('');
 
   // Fetch settings
   useEffect(() => {
@@ -238,12 +240,44 @@ export default function SettingsPage() {
                 <Check className="w-3 h-3" />
                 API key saved
               </div>
-              <button
-                onClick={handleClearKey}
-                className="text-xs text-[var(--color-danger)] hover:underline"
-              >
-                Remove key
-              </button>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={async () => {
+                    setTestStatus('testing');
+                    try {
+                      const res = await fetch('/api/settings/test', { method: 'POST' });
+                      const data = await res.json();
+                      setTestStatus(res.ok ? 'ok' : 'fail');
+                      setTestMessage(res.ok ? `Connected to ${data.provider}` : data.error || 'Connection failed');
+                    } catch {
+                      setTestStatus('fail');
+                      setTestMessage('Network error');
+                    }
+                    setTimeout(() => setTestStatus('idle'), 5000);
+                  }}
+                  disabled={testStatus === 'testing'}
+                  className="text-xs text-[var(--color-accent)] hover:underline disabled:opacity-50"
+                >
+                  {testStatus === 'testing' ? 'Testing...' : 'Test Connection'}
+                </button>
+                <button
+                  onClick={handleClearKey}
+                  className="text-xs text-[var(--color-danger)] hover:underline"
+                >
+                  Remove key
+                </button>
+              </div>
+            </div>
+          )}
+
+          {testStatus === 'ok' && (
+            <div className="flex items-center gap-1.5 text-xs text-[var(--color-success)] mb-4">
+              <Check className="w-3 h-3" /> {testMessage}
+            </div>
+          )}
+          {testStatus === 'fail' && (
+            <div className="flex items-center gap-1.5 text-xs text-[var(--color-danger)] mb-4">
+              <AlertCircle className="w-3 h-3" /> {testMessage}
             </div>
           )}
 
