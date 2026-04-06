@@ -4,9 +4,9 @@ import { PostHogProvider } from '@/components/posthog-provider';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Knowledge Terrarium — AI-Native Knowledge Graph',
+  title: 'Deep Garden — Your Notes Are Alive',
   description:
-    'A beautiful self-organizing knowledge garden. Build your personal knowledge graph with AI-powered linking, graph visualization, and semantic search.',
+    'A cloud-native knowledge graph where your notes live as creatures in a 2D terrarium. They auto-link, auto-tag, synthesize, and organize themselves.',
 };
 
 export default function RootLayout({

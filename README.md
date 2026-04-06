@@ -1,8 +1,8 @@
-# Knowledge Terrarium
+# Deep Garden
 
-A living knowledge graph that organizes itself. Drop in notes, research, and ideas — the system auto-links, auto-tags, and auto-organizes everything in the background.
+A cloud-native knowledge graph where your notes live as creatures in a 2D terrarium. They auto-link, auto-tag, synthesize, and organize themselves.
 
-**A Roomba for your knowledge.**
+**Your notes are alive.**
 
 ## Getting Started
 
@@ -21,8 +21,12 @@ Run the Supabase migration in `supabase/migrations/` to set up the database sche
 
 ## Tech Stack
 
-Next.js 15 / React 19 / Supabase / Tiptap / Tailwind
+Next.js 16 / React 19 / Supabase (Postgres + pgvector) / Tiptap / Tailwind v4
+
+## Business Model
+
+BYOT (Bring Your Own Tokens) — users provide their own Anthropic/OpenAI API keys. $10/mo Pro tier planned.
 
 ## Status
 
-Phase 1: Cloud Obsidian Core (in progress)
+Terrarium v1 — graph view, sidebar, automations (prebuilt + custom), BYOT settings, embeddings, auto-link engine.
