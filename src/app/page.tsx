@@ -12,14 +12,19 @@ export default function LandingPage() {
 
   useEffect(() => {
     const checkAuth = async () => {
-      const supabase = createClient();
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      setIsAuthenticated(!!session);
+      try {
+        const supabase = createClient();
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+        setIsAuthenticated(!!session);
 
-      if (session) {
-        router.push('/garden');
+        if (session) {
+          router.push('/garden');
+        }
+      } catch (err) {
+        console.error('Auth check failed:', err);
+        setIsAuthenticated(false);
       }
     };
 
@@ -27,28 +32,35 @@ export default function LandingPage() {
   }, [router]);
 
   if (isAuthenticated === null) {
-    return null; // Loading
+    return (
+      <div className="min-h-screen bg-[var(--color-background)] flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <Leaf className="w-8 h-8 text-[var(--color-accent)] animate-pulse" />
+          <p className="text-sm text-[var(--color-foreground-secondary)]">Loading...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[var(--bg)] to-[var(--surface)] flex flex-col items-center justify-center px-4">
+    <div className="min-h-screen bg-gradient-to-br from-[var(--color-background)] to-[var(--color-surface)] flex flex-col items-center justify-center px-4">
       {/* Header */}
       <div className="text-center mb-8">
         <div className="flex items-center justify-center gap-3 mb-4">
-          <Leaf className="w-8 h-8 text-[var(--accent)]" />
-          <h1 className="text-5xl font-bold text-[var(--text)]">
-            Knowledge Terrarium
+          <Leaf className="w-8 h-8 text-[var(--color-accent)]" />
+          <h1 className="text-5xl font-bold text-[var(--color-foreground)]">
+            Deep Garden
           </h1>
         </div>
-        <p className="text-xl text-[var(--text-secondary)] mt-4">
-          A Roomba for your knowledge
+        <p className="text-xl text-[var(--color-foreground-secondary)] mt-4">
+          Your notes are alive
         </p>
       </div>
 
       {/* Tagline */}
-      <p className="text-lg text-[var(--text-secondary)] max-w-2xl text-center mb-12">
-        Build a self-organizing knowledge graph. Connect your thoughts, discover
-        patterns, and watch your ideas grow.
+      <p className="text-lg text-[var(--color-foreground-secondary)] max-w-2xl text-center mb-12">
+        A cloud-native knowledge graph where your notes live as creatures in a
+        2D terrarium. They auto-link, auto-tag, synthesize, and organize themselves.
       </p>
 
       {/* CTA Buttons */}
@@ -60,8 +72,8 @@ export default function LandingPage() {
               px-8
               py-3
               rounded
-              bg-[var(--accent)]
-              text-[var(--bg)]
+              bg-[var(--color-accent)]
+              text-[var(--color-background)]
               font-semibold
               hover:opacity-90
               transition-opacity
@@ -76,13 +88,13 @@ export default function LandingPage() {
         ) : (
           <>
             <Link
-              href="/auth/login"
+              href="/login"
               className="
                 px-8
                 py-3
                 rounded
-                bg-[var(--accent)]
-                text-[var(--bg)]
+                bg-[var(--color-accent)]
+                text-[var(--color-background)]
                 font-semibold
                 hover:opacity-90
                 transition-opacity
@@ -95,17 +107,17 @@ export default function LandingPage() {
               <ArrowRight className="w-5 h-5" />
             </Link>
             <Link
-              href="/auth/signup"
+              href="/signup"
               className="
                 px-8
                 py-3
                 rounded
                 border-2
-                border-[var(--accent)]
-                text-[var(--accent)]
+                border-[var(--color-accent)]
+                text-[var(--color-accent)]
                 font-semibold
-                hover:bg-[var(--accent)]
-                hover:text-[var(--bg)]
+                hover:bg-[var(--color-accent)]
+                hover:text-[var(--color-background)]
                 transition-colors
               "
             >
@@ -118,44 +130,44 @@ export default function LandingPage() {
       {/* Features */}
       <div className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl">
         <div className="text-center">
-          <div className="w-12 h-12 rounded-full bg-[var(--accent)] bg-opacity-10 flex items-center justify-center mx-auto mb-3">
-            <span className="text-[var(--accent)] font-bold">1</span>
+          <div className="w-12 h-12 rounded-full bg-[var(--color-accent)]/10 flex items-center justify-center mx-auto mb-3">
+            <span className="text-[var(--color-accent)] font-bold">1</span>
           </div>
-          <h3 className="font-semibold text-[var(--text)] mb-2">
+          <h3 className="font-semibold text-[var(--color-foreground)] mb-2">
             Write Freely
           </h3>
-          <p className="text-sm text-[var(--text-secondary)]">
+          <p className="text-sm text-[var(--color-foreground-secondary)]">
             Capture your thoughts without structure. Your ideas matter.
           </p>
         </div>
 
         <div className="text-center">
-          <div className="w-12 h-12 rounded-full bg-[var(--accent)] bg-opacity-10 flex items-center justify-center mx-auto mb-3">
-            <span className="text-[var(--accent)] font-bold">2</span>
+          <div className="w-12 h-12 rounded-full bg-[var(--color-accent)]/10 flex items-center justify-center mx-auto mb-3">
+            <span className="text-[var(--color-accent)] font-bold">2</span>
           </div>
-          <h3 className="font-semibold text-[var(--text)] mb-2">
+          <h3 className="font-semibold text-[var(--color-foreground)] mb-2">
             Connect Ideas
           </h3>
-          <p className="text-sm text-[var(--text-secondary)]">
+          <p className="text-sm text-[var(--color-foreground-secondary)]">
             Link notes together and watch patterns emerge naturally.
           </p>
         </div>
 
         <div className="text-center">
-          <div className="w-12 h-12 rounded-full bg-[var(--accent)] bg-opacity-10 flex items-center justify-center mx-auto mb-3">
-            <span className="text-[var(--accent)] font-bold">3</span>
+          <div className="w-12 h-12 rounded-full bg-[var(--color-accent)]/10 flex items-center justify-center mx-auto mb-3">
+            <span className="text-[var(--color-accent)] font-bold">3</span>
           </div>
-          <h3 className="font-semibold text-[var(--text)] mb-2">
+          <h3 className="font-semibold text-[var(--color-foreground)] mb-2">
             Discover Knowledge
           </h3>
-          <p className="text-sm text-[var(--text-secondary)]">
-            Let AI help organize and surface connections you didn't see.
+          <p className="text-sm text-[var(--color-foreground-secondary)]">
+            Let AI help organize and surface connections you didn&apos;t see.
           </p>
         </div>
       </div>
 
       {/* Footer */}
-      <div className="mt-20 text-center text-sm text-[var(--text-secondary)]">
+      <div className="mt-20 text-center text-sm text-[var(--color-foreground-secondary)]">
         <p>Built with AI, for thinkers.</p>
       </div>
     </div>
